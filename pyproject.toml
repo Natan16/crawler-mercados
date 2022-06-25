@@ -7,6 +7,7 @@ authors = ["Natan Lima Viana <natanvianat16@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.9"
 selenium = "^4.2.0"
+Django = "^4.0.5"
 
 [tool.poetry.dev-dependencies]
 
