@@ -47,6 +47,7 @@ def constroi_dicionario_de_links(departamentos, deps_dict):
             cats_dict[str(a)] = link
 
 
+# TODO: aprender a renderizar só o necessário
 # proxybroker serve --host 127.0.0.1 --port 8888 --types HTTP HTTPS --lvl High
 PROXY = 'http://localhost:8888'
 chrome_options = ChromeOptions()
