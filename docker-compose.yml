@@ -1,0 +1,11 @@
+postgresql:
+    image: postgis/postgis:11-2.5-alpine
+    volumes:
+      - ./data/postgresql/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=mercados
+      - POSTGRES_USER=mercados
+      - POSTGRES_PASSWORD=mercados
+    ports:
+      - 5432:5432
+    restart: on-failure
