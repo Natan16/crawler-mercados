@@ -50,7 +50,7 @@ def constroi_dicionario_de_links(departamentos, deps_dict):
         cats_dict = deps_dict[span.text] 
         for a in ancoras:
             link = a.get_attribute('href')
-            cats_dict[a.text] = link
+            cats_dict[a.get_attribute('innerHTML')] = link
 
 # proxybroker serve --host 127.0.0.1 --port 8888 --types HTTP HTTPS --lvl High
 # PROXY = 'http://localhost:8888'
@@ -81,23 +81,27 @@ for dep, cats_dict in deps_dict.items():
         try:
             produtos = crawlear_categoria(link)
             for str_nome, str_preco in produtos:
-                produtos_map[str_nome] = (str_preco, cat, dep) # pode virar dataclass
+                produtos_map[str_nome.lower()] = (str_preco, cat.lower(), dep.lower()) # pode virar dataclass
         except NoSuchElementException: # nesse caso não tem nenhum produto disponível da categoria
             pass
 
+# TODO: parte desse código pode virar parte de um utilitário que vai ser útil pra vários
+# crawlers
+# esse passo a passo de gravar os dados crawleados é mais ou menos o mesmo
 produtos_existentes = Produto.objects.filter(
     item__in=produtos_map.keys()
 ).in_bulk(field_name='item')
 for item, values in produtos_map.items():
     if item not in produtos_existentes:
         _, cat, dep = values
+        parts = item.split('-')
         produto = Produto(
             item=item,
+            nome=parts[0],
             categoria=cat,
             departamento=dep
         )
-        nome_minusculo = item.lower()
-        match = re.search(r"[0-9]+,{0,1}[0-9]*[g|kg|l|ml]", nome_minusculo)
+        match = re.search(r"[0-9]+,{0,1}[0-9]*[g|kg|l|ml]", item)
         if match:
             quant = match.group().replace(',', '.')
             if quant[-2:] == 'ml':

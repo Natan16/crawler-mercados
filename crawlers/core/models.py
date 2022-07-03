@@ -42,13 +42,17 @@ class Mercado(models.Model):
     unidade = models.CharField(max_length=1024, blank=True, null=True)
 
 class Produto(models.Model):
-    item = models.CharField(max_length=2048, unique=True)
+    item = models.CharField(max_length=512, unique=True)
+    # vou usar esse nome pra ver os produtos que tem esse mesmo nome e comparar o mais
+    # barato usando o peso ou o volume (pode ser uma faixa)
+    nome = models.CharField(max_length=512, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     categoria = models.CharField(max_length=128, null=True, blank=True)
     departamento = models.CharField(max_length=128, null=True, blank=True)
     peso_g = DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     volume_ml = DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+
 
 class Crawl(models.Model):
     mercado = models.ForeignKey(Mercado, on_delete=models.PROTECT)
