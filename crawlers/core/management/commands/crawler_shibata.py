@@ -1,5 +1,4 @@
 from django.core.management.base import BaseCommand
-from dataclasses import replace
 from selenium.webdriver import Chrome, ChromeOptions
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
