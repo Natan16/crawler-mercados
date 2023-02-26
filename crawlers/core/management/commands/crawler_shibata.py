@@ -16,7 +16,7 @@ class CrawlerShibata:
         chrome_options = ChromeOptions()
         # chrome_options.add_argument('--proxy-server=%s' % PROXY)
         chrome_options.add_experimental_option("prefs", prefs)
-        self.navegador = Chrome(options=chrome_options)
+        self.navegador = Chrome(executable_path="/home/natanviana/dev/pessoal/crawler-mercados/chromedriver", options=chrome_options)
         navegador = self.navegador
         navegador.get(self.BASE_URL)
         sleep(2)
@@ -49,11 +49,17 @@ class CrawlerShibata:
         deps_dict = {}
         self._constroi_dicionario_de_links(departamentos, deps_dict)
         self.deps_dict = deps_dict
+        print(f"URLS: {deps_dict}")
         sleep(1)
     
     def crawleia(self):
-        # TODO: aqui tem que ser get_or_create
-        self.mercado = Mercado.objects.get(unidade='Shibata - Shopping Jardim Oriente')
+        self.mercado, _ = Mercado.objects.get_or_create(
+            rede = "SHIBATA",
+            cidade = "Sao Jose dos Campos",
+            uf = "SP",
+            bairro = "Jardim Oriente",
+            unidade='Shibata - Shopping Jardim Oriente'
+        )
         self.crawl = Crawl.objects.create(mercado=self.mercado)
         produtos_map = {}
         for dep, cats_dict in self.deps_dict.items():
@@ -84,7 +90,6 @@ class CrawlerShibata:
                     categoria=cat,
                     departamento=dep
                 )
-                # TODO: isolar num método
                 match = re.search(r"[0-9]+,{0,1}[0-9]*[g|kg|l|ml]", item)
                 if match:
                     quant = match.group().replace(',', '.')
@@ -149,3 +154,16 @@ class Command(BaseCommand):
         cs.coleta_urls()
         cs.crawleia()
         cs.armazena_no_banco()
+
+
+# https://api.loja.shibata.com.br/v1/loja/classificacoes_mercadologicas/secoes/99/produtos/filial/1/centro_distribuicao/1/ativos?orderby=produto.descricao:asc
+# Request Headers
+# Accept: application/json
+# Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJ2aXBjb21tZXJjZSIsImF1ZCI6ImFwaS1hZG1pbiIsInN1YiI6IjZiYzQ4NjdlLWRjYTktMTFlOS04NzQyLTAyMGQ3OTM1OWNhMCIsInZpcGNvbW1lcmNlQ2xpZW50ZUlkIjpudWxsLCJpYXQiOjE2Nzc0NDgwNjcsInZlciI6MSwiY2xpZW50IjpudWxsLCJvcGVyYXRvciI6bnVsbCwib3JnIjoiMTYxIn0.RANSjc1q_mpotLABDE1Yr9oEETGEvv_jc-9xdos2JoMAJFTu7VMIBNkM_Sv8q7XblMpCfprDHFsUIR223ZnF0Q
+# Content-Type: application/json
+# OrganizationID: 161
+# Referer: https://www.loja.shibata.com.br/
+# sec-ch-ua: "Google Chrome";v="107", "Chromium";v="107", "Not=A?Brand";v="24"
+# sec-ch-ua-mobile: ?0
+# sec-ch-ua-platform: "Linux"
+# User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36
