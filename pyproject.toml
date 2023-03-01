@@ -10,6 +10,8 @@ selenium = "^4.2.0"
 Django = "^4.0.5"
 python-decouple = "^3.6"
 psycopg2-binary = "^2.9.3"
+scrapy = "^2.8.0"
+pytz = "^2022.7.1"
 
 [tool.poetry.dev-dependencies]
 
