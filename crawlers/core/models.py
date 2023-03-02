@@ -2,7 +2,6 @@
 from django.db import models
 from django.db.models.fields import DecimalField
 
-
 UFS = [
     ('AC', 'Acre'),
     ('AL', 'Alagoas'),

@@ -4,9 +4,10 @@
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 
 
+from core.models import Produto
+
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
-from core.models import Produto
 
 
 class ShibataPipeline:

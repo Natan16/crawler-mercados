@@ -1,12 +1,14 @@
-from django.core.management.base import BaseCommand
-from selenium.webdriver import Chrome, ChromeOptions
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
-from selenium.common.exceptions import NoSuchElementException
-from time import sleep
-from core.models import Mercado, Produto, Crawl, ProdutoCrawl
-from decimal import Decimal as D
 import re
+from decimal import Decimal as D
+from time import sleep
+
+from core.models import Crawl, Mercado, Produto, ProdutoCrawl
+from django.core.management.base import BaseCommand
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver import Chrome, ChromeOptions
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+
 
 class CrawlerShibata:
     BASE_URL = 'http://cliqueeretire.shibata.com.br'

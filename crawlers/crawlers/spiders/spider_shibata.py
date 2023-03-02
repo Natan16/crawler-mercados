@@ -1,12 +1,13 @@
-import scrapy
-from scrapy.shell import inspect_response
 import json
-from core.models import Mercado, Crawl, Produto, ProdutoCrawl
-from functools import partial
-from decimal import Decimal as D
-from crawlers.items import ShibataItem
 import re
+from decimal import Decimal as D
+from functools import partial
 
+import scrapy
+from core.models import Crawl, Mercado, Produto, ProdutoCrawl
+from scrapy.shell import inspect_response
+
+from crawlers.items import ShibataItem
 
 header = {
     "Accept": "application/json",
