@@ -40,19 +40,22 @@ class Mercado(models.Model):
     uf = models.CharField(max_length=2, null=True, blank=True, choices=UFS)
     bairro = models.CharField(max_length=1024, blank=True, null=True)
     unidade = models.CharField(max_length=1024, blank=True, null=True)
-
+    filial = models.PositiveSmallIntegerField(default=1)
+    
+    # TODO: rede+filial unique toguether
+    
 class Produto(models.Model):
     item = models.CharField(max_length=512, unique=True)
-    # vou usar esse nome pra ver os produtos que tem esse mesmo nome e comparar o mais
-    # barato usando o peso ou o volume (pode ser uma faixa)
     nome = models.CharField(max_length=512, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     categoria = models.CharField(max_length=128, null=True, blank=True)
     departamento = models.CharField(max_length=128, null=True, blank=True)
-    peso_g = DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    peso_bruto = DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    peso_liquido = DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    # ainda não sei de onde tirar o volume
     volume_ml = DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
-
+    unidades = models.IntegerField(default=1)
 
 class Crawl(models.Model):
     mercado = models.ForeignKey(Mercado, on_delete=models.PROTECT)
