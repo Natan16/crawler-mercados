@@ -64,8 +64,10 @@ class ProdutoCrawl(models.Model):
     produto = models.ForeignKey(Produto, on_delete=models.PROTECT)
     crawl = models.ForeignKey(Crawl, on_delete=models.CASCADE)
     preco = DecimalField(max_digits=12, decimal_places=2)
-    # talvez aqui possa ter mercado também
 
-# class Categoria(models.Categoria):
-#     nome = models.CharField(max_length=128)
-#     link = models.URLField()
+    def to_dict_json(self):
+        return {
+            "produto": {"nome": self.produto.nome},
+            "mercado": {"unidade": self.crawl.mercado.unidade},
+            "preco": self.preco
+        }

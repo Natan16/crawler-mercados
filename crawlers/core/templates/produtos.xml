@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lista de produtos</title>
+</head>
+<body>
+    <h1>Lista de produtos</h1>
+
+    {% for produtocrawl in resposta %}
+        <div> {{ produtocrawl.produto.nome }} | {{ produtocrawl.mercado.unidade }} | <strong>{{ produtocrawl.preco }}</strong></div>
+    {% endfor %}
+
+</body>
+</html>

@@ -59,8 +59,8 @@ class CrawlerShibata:
             rede = "SHIBATA",
             cidade = "Sao Jose dos Campos",
             uf = "SP",
-            bairro = "Jardim Oriente",
-            unidade='Shibata - Shopping Jardim Oriente'
+            bairro = "Aquarius",
+            unidade='Spani - Aquarius'
         )
         self.crawl = Crawl.objects.create(mercado=self.mercado)
         produtos_map = {}
