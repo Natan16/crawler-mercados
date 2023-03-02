@@ -19,7 +19,7 @@ from django.core.wsgi import get_wsgi_application
 
 sys.path.append('/home/natanviana/dev/pessoal/crawler-mercados')
 
-# os.environ['DJANGO_SETTINGS_MODULE'] = 'crawlers.settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'crawlers.settings'
 
 SPIDER_MODULES = ['crawlers.spiders']
 
