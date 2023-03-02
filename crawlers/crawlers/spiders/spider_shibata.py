@@ -25,7 +25,7 @@ class ShibataSpider(scrapy.Spider):
     def __init__(self, filial=1, centro_distribuicao=13):
         self.filial = filial
         self.centro_distribuicao = centro_distribuicao
-        self.mercado = Mercado.objects.get(rede=ShibataSpider.name, filial=filial)
+        self.mercado = Mercado.objects.get(rede=ShibataSpider.name.upper(), filial=filial)
         self.crawl = Crawl.objects.create(self.mercado)
         self.produtos_map = {}
         # o spani é na mesma vibe
