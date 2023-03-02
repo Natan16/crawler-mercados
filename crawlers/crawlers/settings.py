@@ -12,9 +12,20 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 from pathlib import Path
 from decouple import config
+import sys
+import os
+from django.core.wsgi import get_wsgi_application
 
+sys.path.append('/home/natanviana/dev/pessoal/crawler-mercados')
+
+# os.environ['DJANGO_SETTINGS_MODULE'] = 'crawlers.settings'
 
 SPIDER_MODULES = ['crawlers.spiders']
+
+ITEM_PIPELINES = {
+   'crawlers.pipelines.ShibataPipeline': 300,
+}
+
 
 HTTPERROR_ALLOWED_CODES = [401]
 
@@ -134,3 +145,5 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+application = get_wsgi_application()

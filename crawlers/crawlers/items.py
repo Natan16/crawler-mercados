@@ -10,3 +10,15 @@ class ParserModuleItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
     pass
+
+
+class ShibataItem(scrapy.Item):
+    item=scrapy.Field()
+    nome=scrapy.Field()
+    categoria=scrapy.Field()
+    departamento=scrapy.Field()
+    peso_bruto=scrapy.Field()
+    peso_liquido=scrapy.Field()
+    unidades=scrapy.Field()
+    preco=scrapy.Field()
+

@@ -6,8 +6,24 @@
 
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
+from core.models import Produto
 
 
-class ParserModulePipeline:
-    def process_item(self, item, spider):
-        return item
+class ShibataPipeline:
+
+    def __init__(self):
+        pass
+
+    def process_item(self, shibata_item, spider):
+        prod = Produto(
+            item=shibata_item["item"],
+            nome=shibata_item["nome"],
+            categoria=shibata_item["categoria"],
+            departamento=shibata_item["departamento"],
+            peso_liquido=shibata_item["peso_liquido"],
+            peso_bruto=shibata_item["peso_bruto"]
+        )
+        spider.produtos_map[shibata_item["item"]] = (prod, shibata_item["preco"])
+    
+    def close_spider(self, spider):
+        spider.armazena_no_banco()

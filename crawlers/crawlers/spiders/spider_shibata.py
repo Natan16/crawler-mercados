@@ -1,8 +1,10 @@
 import scrapy
+from scrapy.shell import inspect_response
 import json
 from core.models import Mercado, Crawl, Produto, ProdutoCrawl
 from functools import partial
 from decimal import Decimal as D
+from crawlers.items import ShibataItem
 import re
 
 
@@ -23,10 +25,10 @@ class ShibataSpider(scrapy.Spider):
     name = "shibata"
 
     def __init__(self, filial=1, centro_distribuicao=13):
-        self.filial = filial
         self.centro_distribuicao = centro_distribuicao
+        self.filial = filial
         self.mercado = Mercado.objects.get(rede=ShibataSpider.name.upper(), filial=filial)
-        self.crawl = Crawl.objects.create(self.mercado)
+        self.crawl = Crawl.objects.create(mercado=self.mercado)
         self.produtos_map = {}
         # o spani é na mesma vibe
         # posso até fazer um comando pra criar mercados ... seria legal fazer naquele esquema de template
@@ -35,38 +37,32 @@ class ShibataSpider(scrapy.Spider):
         centro_distribuicao = self.centro_distribuicao
         filial = self.filial
         url = "https://api.loja.shibata.com.br/v1/loja/classificacoes_mercadologicas/departamentos/arvore/filial/{filial}/centro_distribuicao/{centro_distribuicao}"
-        yield scrapy.Request(url.format(secao=secao, filial=filial, centro_distribuicao=centro_distribuicao), callback=self.parse_categorias, headers=header)
+        yield scrapy.Request(url.format(filial=filial, centro_distribuicao=centro_distribuicao), callback=self.parse_categorias, headers=header)
 
-        for dep in self.categorias_tree:
-            for cat in dep["children"]:
-                parse_categoria = partial(self.parse, departamento=dep["descricao"], secao=cat["descricao"])
-                secao = cat["classificacao_mercadologica_id"]
-                url = "https://api.loja.shibata.com.br/v1/loja/classificacoes_mercadologicas/secoes/{secao}/produtos/filial/{filial}/centro_distribuicao/{centro_distribuicao}/ativos?orderby=produto.descricao:asc"
-                yield scrapy.Request(url.format(secao=secao, filial=filial, centro_distribuicao=centro_distribuicao), callback=parse_categoria, headers=header)
-        
-        self.armazena_no_banco()
 
     def parse(self, response, departamento, categoria):
-        # scrapy.shell.inspect_response(response, self)
-        jsonresponse = json.loads(response.data)
+        jsonresponse = json.loads(response.text)["data"]
         for produto in jsonresponse:
             codigo_de_barras = produto["produto"]["complemento"]["codigo_barras"]
-            # categoria e departamento são outras coisas (nomes que vou pegar da descricao)
-            # produto["classificacao_mercadologica_id"] # talvez isso aqui não
-            prod = Produto(
+            yield ShibataItem(
                 item=codigo_de_barras,
                 nome=produto["descricao"],
                 categoria=categoria,
                 departamento=departamento,
                 peso_bruto=D(produto["produto"]["peso_bruto"]) or None,
                 peso_liquido=D(produto["produto"]["peso_liquido"]) or None,
-                unidades = produto["produto"]["quantidade_unidade_diferente"]
+                unidades = produto["produto"]["quantidade_unidade_diferente"],
+                preco = produto["preco"]
             )
-            self.produtos_map[codigo_de_barras] = (prod, produto["preco"])
         
     def parse_categorias(self, response):
-        jsonresponse = json.loads(response.data)
-        self.categorias_tree = jsonresponse
+        categorias_tree = json.loads(response.text)["data"]
+        for dep in categorias_tree:
+            for cat in dep["children"]:
+                parse_categoria = partial(self.parse, departamento=dep["descricao"], categoria=cat["descricao"])
+                secao = cat["classificacao_mercadologica_id"]
+                url = "https://api.loja.shibata.com.br/v1/loja/classificacoes_mercadologicas/secoes/{secao}/produtos/filial/{filial}/centro_distribuicao/{centro_distribuicao}/ativos?orderby=produto.descricao:asc"
+                yield scrapy.Request(url.format(secao=secao, filial=self.filial, centro_distribuicao=self.centro_distribuicao), callback=parse_categoria, headers=header)
         
     def armazena_no_banco(self):
         produtos_a_criar = []

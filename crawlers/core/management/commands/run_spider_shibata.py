@@ -4,7 +4,8 @@ from scrapy.crawler import CrawlerProcess
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        process = CrawlerProcess()
-        process.crawl(ShibataSpider)
-        process.start()
-        
+        pass
+        # process = CrawlerProcess()
+        # process.crawl(ShibataSpider)
+        # process.start()
+        # -o bookspider_data.csv # salvar num arquivo pode ser uma boa ... não sei se eliminaria a necessidade de uma pipeline
