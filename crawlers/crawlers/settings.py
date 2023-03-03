@@ -43,7 +43,7 @@ SECRET_KEY = 'django-insecure-b*)a8l-ra)h#kscb@nf$c*-=9p4l)ucz27+1!89_nytg2-9l-)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["mercado"]
+ALLOWED_HOSTS = ["mercado", "localhost"]
 
 
 # Application definition
