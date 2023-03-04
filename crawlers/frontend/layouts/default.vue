@@ -2,11 +2,11 @@
   <v-app id="inspire">
     <toolbar :state="layout" />
     <!-- <sidenav-left :state="layout" /> -->
-    <v-content>
+    <v-main>
       <v-container fluid>
         <nuxt />
       </v-container>
-    </v-content>
+    </v-main>
     <le-footer />
     <v-snackbar
       :timeout="snack.timeout"

@@ -5,11 +5,11 @@
     <sidenav-left :state="layout" />
     <sidenav-left-temp :state="layout" />
     <sidenav-right-temp :state="layout" /> -->
-    <v-content>
+    <v-main>
       <v-container fluid>
         <nuxt />
       </v-container>
-    </v-content>
+    </v-main>
     <le-footer />
   </v-app>
 </template>

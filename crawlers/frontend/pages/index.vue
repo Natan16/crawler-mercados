@@ -1,6 +1,6 @@
 <template>
   <v-layout justify-center align-center row>
-    <v-flex xs8>
+    <v-flex xs10>
       <v-text-field v-model="term" label="digite o produto que deseja buscar" />
     </v-flex>
     <v-data-table
