@@ -2,11 +2,15 @@ version: '2'
 services:
   db:
     image: postgres
+    volumes:
+      - ./data/postgresql/data:/var/lib/postgresql/data
     environment:
+      - POSTGRES_DB=mercados
       - POSTGRES_USER=mercados
       - POSTGRES_PASSWORD=mercados
     ports:
       - 5432:5432
+    restart: on-failure
     volumes:
       - ../dkdata/postgres:/var/lib/postgresql/data
   nginx:
