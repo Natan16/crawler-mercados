@@ -6,7 +6,7 @@ metadata:
   namespace: default
 spec:
   selector:
-    app.kubernetes.io/name: mercados
+    app.kubernetes.io/name: crawlers
   ports:
     - protocol: TCP
       port: 80
