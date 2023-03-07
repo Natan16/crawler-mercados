@@ -1,3 +1,4 @@
+# TEORICAMENTE NÃO VAI PRECISAR DE UM INGRESS, PQ O DEPLOYMENT JÁ CONFIGURA ISSO QUANDO CHAMA O start_web.sh
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
