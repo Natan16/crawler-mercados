@@ -6,5 +6,6 @@ dkdata
 .coverage
 coverage.xml
 htmlcov/
+data/
 .idea
 /crawlers.log
