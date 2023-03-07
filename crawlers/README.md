@@ -18,24 +18,6 @@ https://nahuelhernandez.com/blog/ingress_and_external_dns_with_route53_on_eks/
 
 kubectl apply -f manifests/.
 
+# Pra criar os segredos que a aplicação vai usar pra se conectar ao banco
 
-# Bizu pra criar os mercados
-from core.models import Mercado
-
-Mercado.objects.create(
-    rede = "SHIBATA",
-    cidade = "São José dos Campos",
-    uf = "SP",
-    bairro = "Jardim Oriente",
-    unidade = "Shibata - Jardim Oriente",
-    filial = 1
-)
-
-Mercado.objects.create(
-    rede = "SPANI",
-    cidade = "São José dos Campos",
-    uf = "SP",
-    bairro = "Aquarius",
-    unidade = "Spani - Aquarius",
-    filial = 1
-)
+kubectl create secret generic -n default postgres-creds --from-literal=DB_HOST=<HOST> --from-literal=DB_PASS=<PASS>

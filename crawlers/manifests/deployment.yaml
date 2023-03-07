@@ -17,3 +17,24 @@ spec:
       - name: mercados-site
         image: 415395292850.dkr.ecr.sa-east-1.amazonaws.com/crawlers:latest
         imagePullPolicy: Always
+        command:
+          - start_web.sh
+        env:
+          - name: DB_HOST
+            valueFrom:
+              secretKeyRef:
+                name: postgres-creds
+                key: DB_HOST
+          - name: DB_PASS
+            valueFrom:
+              secretKeyRef:
+                name: postgres-creds
+                key: DB_PASS
+        ports:
+          - '8000:8000'
+          - '3000:3000'
+          - '80:80'
+
+
+
+    
