@@ -1,0 +1,44 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mercados-ingress
+  namespace: default
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: mercadosimplificado.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mercados-entrypoint
+                port:
+                  number: 80
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: mercados-entrypoint
+                port:
+                  number: 8080
+
+    - host: www.mercadosimplificado.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mercados-entrypoint
+                port:
+                  number: 80
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: mercados-entrypoint
+                port:
+                  number: 8080

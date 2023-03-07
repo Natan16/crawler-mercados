@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mercados-deployment
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      mercados: web
+  template:
+    metadata:
+      labels:
+        mercados: web
+    spec:
+      containers:
+      - name: mercados-site
+        image: 415395292850.dkr.ecr.sa-east-1.amazonaws.com/crawlers:latest
+        imagePullPolicy: Always

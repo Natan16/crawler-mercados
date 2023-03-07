@@ -2,7 +2,7 @@ FROM python:3.6-alpine
 
 RUN apk add openrc bash curl vim nano git zip unzip nginx make gcc g++ libc-dev linux-headers nodejs npm postgresql-libs musl-dev postgresql-dev && \
     mkdir -p /run/nginx && \
-    pip install uwsgi uwsgitop
+    pip install uwsgi uwsgitop poetry
 
 # Replace shell with bash so we can source files
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh && \
@@ -14,8 +14,9 @@ RUN rm /bin/sh && ln -s /bin/bash /bin/sh && \
 RUN mkdir /dkdata
 WORKDIR /app
 
-COPY requirements.txt ./
-RUN pip install -r requirements.txt
+COPY poetry.lock pyproject.toml /app/
+RUN poetry config virtualenvs.create false \
+  && poetry install
 
 COPY frontend/package.json frontend/package.json
 COPY frontend/package-lock.json frontend/package-lock.json

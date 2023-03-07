@@ -1,0 +1,10 @@
+poetry.lock
+.python-version
+__pycache__
+dkdata
+*.pyc
+.coverage
+coverage.xml
+htmlcov/
+.idea
+/crawlers.log
