@@ -1,7 +1,7 @@
 version: '2'
 services:
   db:
-    image: postgres:14
+    image: postgis/postgis:14-3.3-alpine
     volumes:
       - ./data/postgresql/data:/var/lib/postgresql/data
     environment:
