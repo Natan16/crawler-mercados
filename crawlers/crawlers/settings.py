@@ -97,11 +97,11 @@ WSGI_APPLICATION = 'crawlers.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': config('DB_NAME', default='mercados'),
-        'USER': config('DB_USER', default='mercados'),
-        'PASSWORD': config('DB_PASS', default='mercados'),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='5432'),
+        'NAME': config('DJANGO_DB_NAME', default='mercados'),
+        'USER': config('DJANGO_DB_USER', default='mercados'),
+        'PASSWORD': config('DJANGO_DB_PASSWORD', default='mercados'),
+        'HOST': config('DJANGO_DB_HOST', default='localhost'),
+        'PORT': config('DJANGO_DB_PORT', default='5432'),
         'CONN_MAX_AGE': config('DB_CONN_MAX_AGE', default=0, cast=int),
         'DISABLE_SERVER_SIDE_CURSORS': True,
     }
