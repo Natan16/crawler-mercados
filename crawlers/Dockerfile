@@ -1,6 +1,36 @@
-FROM python:3.10-alpine
+FROM python:3.10
 
-RUN apk add libffi-dev openrc bash curl vim nano git zip unzip nginx make gcc g++ libc-dev linux-headers nodejs npm postgresql-libs musl-dev postgresql-dev && \
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y \
+        gdal-bin \
+        wait-for-it \
+        curl \
+        gpg && \
+    curl https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+      | gpg --dearmor \
+      | tee /etc/apt/trusted.gpg.d/apt.postgresql.org.gpg >/dev/null && \
+    echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" > /etc/apt/sources.list.d/postgresql.list && \
+    apt-get update && \
+    apt-get install --no-install-recommends -y \
+        jq \
+        libgdal-dev \
+        locales \
+        supervisor \
+        libmagic-dev \
+        build-essential \
+        # Shapely dep
+        libgeos-dev \
+        # usado durante o CI para verificar se mudou coisa sem ser no frontend
+        git \
+        # cffi dep
+        libffi-dev \
+        # lxml dep
+        libxml2-dev libxslt1-dev \
+        # cryptography dep
+        rustc cargo \
+        # pg_dump/pg_restore no CI
+        postgresql-client-14 \
+        npm  && \
     mkdir -p /run/nginx && \
     pip install uwsgi uwsgitop poetry
 
