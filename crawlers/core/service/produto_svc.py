@@ -7,8 +7,9 @@ CharField.register_lookup(Lower)
 
 # deve ter um jeito de otimizar a busca
 # vou usar o django qserializer do Iuri?
+# TODO: fazer a paginação
 def search_produtos(search_term):
-    produto_qs = Produto.objects.filter(nome__lower__icontains=search_term)
+    produto_qs = Produto.objects.filter(nome__search=search_term)
     crawl_qs = Crawl.objects.filter(
         created_at__gte=datetime.now() - timedelta(days=7)
     )
