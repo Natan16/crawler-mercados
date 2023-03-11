@@ -7,10 +7,7 @@ from functools import reduce
 
 CharField.register_lookup(Lower)
 
-# deve ter um jeito de otimizar a busca
-# vou usar o django qserializer do Iuri?
 # TODO: fazer a paginação
-# fazer o crawler de pelo menos mais 1 mercado
 # colocar adsense
 
 def search_produtos(search_term):
