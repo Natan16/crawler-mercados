@@ -20,6 +20,6 @@ def search_produtos(search_term):
     produto_qs = Produto.objects.filter(query)
     crawl_qs = Crawl.objects.filter(
         created_at__gte=datetime.now() - timedelta(days=7)
-    ).distinct('mercado').order_by('mercado')
+    ).distinct('mercado').order_by('mercado', "-id")
     produto_crawl_qs = ProdutoCrawl.objects.filter(produto__in=produto_qs, crawl__in=crawl_qs).select_related("crawl", "crawl__mercado", "produto").order_by("preco")
     return produto_crawl_qs

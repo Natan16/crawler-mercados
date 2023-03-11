@@ -22,3 +22,10 @@ class ShibataItem(scrapy.Item):
     unidades=scrapy.Field()
     preco=scrapy.Field()
 
+class CarrefourItem(scrapy.Item):
+    item=scrapy.Field()
+    nome=scrapy.Field()
+    categoria=scrapy.Field()
+    departamento=scrapy.Field()
+    unidades=scrapy.Field()
+    preco=scrapy.Field()

@@ -38,8 +38,6 @@ class SpaniSpider(scrapy.Spider):
         self.mercado = Mercado.objects.get(rede=SpaniSpider.name.upper(), filial=filial)
         self.crawl = Crawl.objects.create(mercado=self.mercado)
         self.produtos_map = {}
-        # o spani é na mesma vibe
-        # posso até fazer um comando pra criar mercados ... seria legal fazer naquele esquema de template
     
     def start_requests(self):
         centro_distribuicao = self.centro_distribuicao
@@ -52,6 +50,7 @@ class SpaniSpider(scrapy.Spider):
         jsonresponse = json.loads(response.text)["data"]
         for produto in jsonresponse:
             codigo_de_barras = produto["produto"]["complemento"]["codigo_barras"]
+            # TODO: renomear pra um nome mais genérico
             yield ShibataItem(
                 item=codigo_de_barras,
                 nome=produto["descricao"],

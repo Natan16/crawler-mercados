@@ -23,3 +23,12 @@ class Command(BaseCommand):
             unidade = "Spani - Aquarius",
             filial = 1
         )
+
+        Mercado.objects.get_or_create(
+            rede = "CARREFOUR",
+            cidade = "São José dos Campos",
+            uf = "SP",
+            bairro = "Jardim Serimbura",
+            unidade = "Carrefour - Jardim Serimbura",
+            filial = 1
+        )
