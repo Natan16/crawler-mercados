@@ -61,7 +61,7 @@ class CarrefourSpider(scrapy.Spider):
         edges = parsed_response["edges"]
         for edge in edges:
             node = edge["node"]
-            preco = node["offers"]["lowPrice"]
+            preco = node["offers"]["lowPrice"] or node["offers"]["offers"][0]["price"]
 
             yield CarrefourItem(
                 item = f"carrefour-{node['id']}",
