@@ -56,13 +56,14 @@ class CarrefourSpider(scrapy.Spider):
             parse_first_dep = partial(self.parse_first, departamento=departamento)
             yield scrapy.Request(url.format(first=chunk_size, departamento=departamento), callback=parse_first_dep, headers=header)
 
-    def parse(self, response, departamento=...):
+    def parse(self, response, departamento):
         parsed_response = json.loads(response.text)["data"]["search"]["products"]
         edges = parsed_response["edges"]
         for edge in edges:
             node = edge["node"]
             preco = node["offers"]["lowPrice"] or node["offers"]["offers"][0]["price"]
-
+            if not preco:
+                continue
             yield CarrefourItem(
                 item = f"carrefour-{node['id']}",
                 nome = node["name"],
