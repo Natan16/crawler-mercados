@@ -1,18 +1,26 @@
 <template>
   <v-layout justify-center align-center row>
-    <v-flex xs10>
-      <v-text-field v-model="term" label="digite o produto que deseja buscar" />
+    <v-flex xs6 class="pt-4">
+      <v-text-field
+        outlined
+        v-model="term"
+        label="digite o produto que deseja buscar"
+        clearable
+        autofocus
+      />
     </v-flex>
-    <v-data-table
-      :headers="headers"
-      :items="produtos"
-    >
-      <template v-slot:items="props">
-        <td>{{ props.item.produto.nome }}</td>
-        <td>{{ props.item.mercado.unidade }}</td>
-        <td>{{ props.item.preco }}</td>
-      </template>
-    </v-data-table>
+    <v-flex xs7>
+      <v-data-table
+        :headers="headers"
+        :items="produtos"
+      >
+        <template v-slot:items="props">
+          <td>{{ props.item.produto.nome }}</td>
+          <td>{{ props.item.mercado.unidade }}</td>
+          <td>{{ props.item.preco }}</td>
+        </template>
+      </v-data-table>
+    </v-flex>
   </v-layout>
 </template>
 
