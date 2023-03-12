@@ -62,10 +62,10 @@ export default {
     '@nuxtjs/axios',
     ['@nuxtjs/pwa', {
       manifest: {
-        name: 'crawlers',
-        short_name: 'crawlers',
+        name: 'mercado simplificado',
+        short_name: 'mercado simples',
         lang: 'pt-BR',
-        theme_color: 'blue'
+        theme_color: 'blue' // TODO: trocar essa cor
       },
       workbox: {
       }
