@@ -15,10 +15,9 @@ export default {
     title: process.env.npm_package_name || '',
     script: [
       {
-        hid: 'adsense',
         src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1271835845256982',
         crossorigin: 'anonymous',
-        defer: true
+        async: true
       }
     ],
     meta: [
