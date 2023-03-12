@@ -62,7 +62,8 @@ class CarrefourSpider(scrapy.Spider):
         for edge in edges:
             node = edge["node"]
             preco = node["offers"]["lowPrice"] or node["offers"]["offers"][0]["price"]
-            if not preco:
+            indiponivel = node["offers"]["offers"][0]["availability"] == "https://schema.org/OutOfStock"
+            if not preco or indiponivel:
                 continue
             yield CarrefourItem(
                 item = f"carrefour-{node['id']}",
