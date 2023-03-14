@@ -1,7 +1,7 @@
 <template>
   <v-app-bar color="blue-grey" dark fixed app clipped-right>
     <!-- <v-app-bar-nav-icon @click.stop="state.drawer = !state.drawer" /> -->
-    <v-toolbar-title>Mercado Simplificado</v-toolbar-title>
+    <v-toolbar-title><button @click="home()">Mercado Simplificado</button></v-toolbar-title>
     <v-spacer />
     <!-- colocar um acesso à lista de compras aqui -->
     <!-- <v-btn v-if="!logged_user" text dark ripple class="ma-0 ml-5" @click="open_login_dialog($event)">Login</v-btn> -->
@@ -39,7 +39,20 @@
         </v-list>
       </v-card>
     </v-menu>
-    <v-icon size="300%">mdi-format-list-bulleted</v-icon>
+    <v-tooltip bottom>
+      <template v-slot:activator="{ on, attrs }">
+        <button @click="pageLista()">
+          <v-icon
+            size="200%"
+            v-bind="attrs"
+            v-on="on"
+          >
+            mdi-format-list-bulleted
+          </v-icon>
+        </button>
+      </template>
+      <span>Ir para lista de compras</span>
+    </v-tooltip>
     <!-- <v-app-bar-nav-icon @click.stop="state.drawerRight = !state.drawerRight" /> -->
     <login-dialog ref="login_dialog" />
   </v-app-bar>
@@ -69,6 +82,12 @@ export default {
       await api.logout()
       this.$store.commit('auth/setCurrentUser', null)
       Snacks.show(this.$store, {text: 'Até logo!'})
+    },
+    home () {
+      this.$router.push({name: 'index'})
+    },
+    pageLista () {
+      this.$router.push({name: 'lista'})
     }
   }
 }

@@ -4,9 +4,10 @@
       <v-text-field
         outlined
         v-model="term"
-        label="digite o produto que deseja buscar"
+        label="Digite o produto que deseja buscar"
         clearable
         autofocus
+        @keydown.enter="adicionarItem()"
       />
     </v-flex>
     <v-flex xs7>
@@ -27,6 +28,7 @@
 <script>
 import debounce from 'lodash/debounce'
 import api from '~api'
+import Snacks from '~/helpers/Snacks.js'
 
 export default {
   data () {
@@ -62,7 +64,24 @@ export default {
     searchProduto: debounce(async function (term) {
       const response = await api.search_produto(term)
       this.produtos = response
-    }, 500)
+    }, 500),
+    reset () {
+      this.term = ''
+      this.produtos = []
+    },
+    adicionarItem () {
+      const item = {term: this.term, produtos: this.produtos}
+      this.$store.commit('lista/addItem', item)
+      Snacks.show(this.$store, {text: `${this.term} adicionado à lista`, timeout: 2000})
+      this.reset()
+      // vai ter um contador que vai ser incrementado a cada commit
+      // tem que ter um adicionar produto também, pra adicionar item específico
+      // faz sentido ter um segundo endpoint pra fazer a computação? Acho que sim!
+    },
+    adicionarProduto () {
+      // na verdade é um produto em específico
+      Snacks.show(this.$store, {text: `${this.term} adicionado à lista`})
+    }
   }
 }
 </script>
