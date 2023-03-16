@@ -61,19 +61,20 @@ class CarrefourSpider(scrapy.Spider):
         edges = parsed_response["edges"]
         for edge in edges:
             node = edge["node"]
+            codigo_de_barras = node["gtin"]
             preco = node["offers"]["lowPrice"] or node["offers"]["offers"][0]["price"]
             indiponivel = node["offers"]["offers"][0]["availability"] == "https://schema.org/OutOfStock"
             if not preco or indiponivel:
                 continue
             yield CarrefourItem(
-                item = f"carrefour-{node['id']}",
+                item = codigo_de_barras,
                 nome = node["name"],
                 categoria = None,
                 departamento = departamento,
                 unidades = node["unitMultiplier"],
                 preco = preco
             )
-        
+
     def parse_first(self, response, departamento):
         parsed_response = json.loads(response.text)["data"]["search"]["products"]
         total_count = parsed_response["pageInfo"]["totalCount"]
