@@ -1,33 +1,46 @@
 export const state = () => ({
-//   lista: [], // lista genérica
-  mercadosLista: {} // vai ser nome do mercado e a lista de compras
-// um item e suas alternativas
-// lista de cada mercado
+  mercadosLista: {correspondencias: {}}
 })
 
 export const mutations = {
   addItem (state, item) {
-    // state.lista.push(item.term)
+    const unidades = []
     item.produtos.forEach(produto => {
-      // vai guardar quais os mercados em que esse produto já foi colocado (talvez colocar só os ids pros produtos)
-      // precisa da quantidade também
-      // os produtos precisam ser buscáveis, pelo id é uma boa!
-      if (state.mercadosLista[produto.mercado.unidade] === undefined) {
-        state.mercadosLista[produto.mercado.unidade] = [{produto, quantidade: 1}]
-      } else {
-        state.mercadosLista[produto.mercado.unidade].push({produto, quantidade: 1})
+      if (!unidades.includes(produto.mercado.unidade)) {
+        unidades.push(produto.mercado.unidade)
+        // ISOLAR NUM METODO
+        if (!state.mercadosLista[produto.mercado.unidade]) {
+          state.mercadosLista[produto.mercado.unidade] = {}
+        }
+        if (!state.mercadosLista[produto.mercado.unidade][produto.id]) {
+          state.mercadosLista[produto.mercado.unidade][produto.id] = {...produto, quantidade: 1}
+          return
+        }
+        state.mercadosLista[produto.mercado.unidade][produto.id].quantidade += 1
       }
     })
-    // a ideia é que dê pra desfazer a operação também ... acho que com vuex dá fácil
-    // em vez de adicionar todos, vai adicionar só o mais barato de cada mercado
-    // faz sentido armazenar os outros como alternativas? talvez num segundo momento
+    state.mercadosLista.correspondencias[item.term] = unidades
   },
   addProduto (state, produto) {
-    state.mercadosLista[produto.mercado.unidade].push({produto, quantidade: 1})
+    if (!state.mercadosLista[produto.mercado.unidade]) {
+      state.mercadosLista[produto.mercado.unidade] = {}
+    }
+    if (!state.mercadosLista[produto.mercado.unidade][produto.id]) {
+      state.mercadosLista[produto.mercado.unidade][produto.id] = {...produto, quantidade: 1}
+      return
+    }
+    state.mercadosLista[produto.mercado.unidade][produto.id].quantidade += 1
+  },
+  removeProduto (state, produto) {
+    if (state.mercadosLista[produto.mercado.unidade][produto.id] === undefined) {
+      return
+    }
+    if (state.mercadosLista[produto.mercado.unidade][produto.id].quantidade <= 1) {
+      state.mercadosLista[produto.mercado.unidade][produto.id] = undefined
+      return
+    }
+    state.mercadosLista[produto.mercado.unidade][produto.id].quantidade -= 1
   }
-  // hide (state) {
-  // state.snack.visible = false
-  // }
 }
 export const getters = {
   mercadosLista (state) {

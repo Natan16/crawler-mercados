@@ -40,7 +40,7 @@ class Mercado(models.Model):
     bairro = models.CharField(max_length=1024, blank=True, null=True)
     unidade = models.CharField(max_length=1024, blank=True, null=True)
     filial = models.PositiveSmallIntegerField(default=1)
-    
+     # logo_url
     # TODO: rede+filial unique toguether
     
 class Produto(models.Model):
@@ -52,9 +52,9 @@ class Produto(models.Model):
     departamento = models.CharField(max_length=128, null=True, blank=True)
     peso_bruto = DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     peso_liquido = DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
-    # ainda não sei de onde tirar o volume
     volume_ml = DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     unidades = models.IntegerField(default=1)
+
 
 class Crawl(models.Model):
     mercado = models.ForeignKey(Mercado, on_delete=models.PROTECT)
@@ -67,7 +67,8 @@ class ProdutoCrawl(models.Model):
 
     def to_dict_json(self):
         return {
-            "produto": {"nome": self.produto.nome},
-            "mercado": {"unidade": self.crawl.mercado.unidade},
+            "id": self.pk,
+            "produto": {"nome": self.produto.nome, "id": self.produto.pk},
+            "mercado": {"unidade": self.crawl.mercado.unidade, "rede": self.crawl.mercado.rede},
             "preco": self.preco
         }
