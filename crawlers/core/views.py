@@ -6,7 +6,8 @@ from django.shortcuts import render
 def search_produtos(request):
     search_term = request.GET.get("search_term")
     produto_crawl_qs = produto_svc.search_produtos(search_term)
-    return JsonResponse([prod.to_dict_json() for prod in produto_crawl_qs], safe=False)
+    limit = 20
+    return JsonResponse([prod.to_dict_json() for prod in produto_crawl_qs[:limit]], safe=False)
 
 def whoami(request):
     i_am = {
