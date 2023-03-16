@@ -24,7 +24,7 @@
             <v-container>
               <div>{{item.produto.nome}}</div>
               <div>Mercado: {{item.mercado.unidade}}</div>
-              <v-img width="100px" :src="getLogoUrl(item.mercado.rede)" />
+              <v-img width="100px" :src="getLogo(item.mercado.rede)" />
               <v-spacer />
               <div class="text-h4"><strong>R$ {{ item.preco }}</strong></div>
               <!-- o preço tem que ficar mais à mostra -->
@@ -59,10 +59,10 @@ export default {
     return {
       produtos: [],
       term: null,
-      logoUrlsMap: {
-        'SHIBATA': `https://www.loja.shibata.com.br/assets/img/header-logo.png`,
-        'SPANI': `https://www.spani.com.br/static/_logo-spani-atacadista-17363bf5c646d322679111b84684d09c.png`,
-        'CARREFOUR': `https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Carrefour_logo.svg/1200px-Carrefour_logo.svg.png`
+      logoMap: {
+        'SHIBATA': require('~/assets/shibata.png'),
+        'SPANI': require('~/assets/spani.png'),
+        'CARREFOUR': require('~/assets/carrefour.png')
       }
     }
   },
@@ -122,8 +122,8 @@ export default {
         }
       })
     },
-    getLogoUrl (rede) {
-      return this.logoUrlsMap[rede]
+    getLogo (rede) {
+      return this.logoMap[rede]
     }
   }
 }
