@@ -93,7 +93,7 @@ class SpaniSpider(scrapy.Spider):
         produtos_criados = Produto.objects.bulk_create(produtos_a_criar, batch_size=1000)
         for p in produtos_criados:
             produtos_existentes[p.item] = p
-
+        # códigos de barra diferentes apontando pro mesmo produto ... é possível?
         for codigo_de_barras, values in produtos_map.items():
             _, str_preco = values
         
@@ -102,4 +102,19 @@ class SpaniSpider(scrapy.Spider):
                 crawl=self.crawl,
                 produto=produtos_existentes[codigo_de_barras]
             ))
-        ProdutoCrawl.objects.bulk_create(produtos_crawl, batch_size=1000)   
+        ProdutoCrawl.objects.bulk_create(set(produtos_crawl), batch_size=1000)   
+
+
+# aqui é pra deletar duplicações
+# produto_crawl_qs = ProdutoCrawl.objects.filter(crawl_id=7).order_by('-id')
+# unique = set()
+# produtos_crawl_para_deletar = []
+# for produto_crawl in produto_crawl_qs:
+#     key = produto_crawl.produto.pk
+#     if key in unique:
+#         produtos_crawl_para_deletar.append(produto_crawl.pk)
+#         continue 
+#     unique.add(key)
+
+          
+# ProdutoCrawl.objects.filter(id__in=produtos_crawl_para_deletar).delete()
