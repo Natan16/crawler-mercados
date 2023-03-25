@@ -14,7 +14,7 @@
           <li
             v-for="(produto,idx) in produtos" :key="idx"
           >
-            {{ produto.produto.nome }} - R$ {{ produto.preco }} - {{ produto.quantidade }}Un - R$ {{ produto.quantidade * produto.preco }}
+            {{ produto.produto.nome }} - R$ {{ produto.preco }} - {{ produto.quantidade }}Un - R$ {{ (produto.quantidade * produto.preco).toFixed(2) }}
           </li>
           <br>
           Itens indisponíveis:

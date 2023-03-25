@@ -13,6 +13,7 @@
         @keydown.esc="term = ''"
       />
     </v-flex>
+    <loading v-if="loading" />
     <div
       v-for="(item, idx) in produtos"
       :key="idx"
@@ -53,8 +54,12 @@ import debounce from 'lodash/debounce'
 import Vue from 'vue'
 import api from '~api'
 import Snacks from '~/helpers/Snacks.js'
+import loading from '~/components/loading'
 
 export default {
+  components: {
+    loading
+  },
   data () {
     return {
       produtos: [],
@@ -63,7 +68,8 @@ export default {
         'SHIBATA': require('~/assets/shibata.png'),
         'SPANI': require('~/assets/spani.png'),
         'CARREFOUR': require('~/assets/carrefour.png')
-      }
+      },
+      loading: false
     }
   },
   computed: {
@@ -71,6 +77,7 @@ export default {
   watch: {
     term (value) {
       if (value?.length >= 3) {
+        this.loading = true
         this.searchProduto(value)
       }
     }
@@ -81,6 +88,7 @@ export default {
     searchProduto: debounce(async function (term) {
       const response = await api.search_produto(term)
       this.produtos = response
+      this.loading = false
       // aqui tem que pegar do carrinho, caso já tenha
       this.produtos.forEach(item => {
         item.quantidade = 0

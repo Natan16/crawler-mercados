@@ -5,9 +5,15 @@ from django.shortcuts import render
 
 def search_produtos(request):
     search_term = request.GET.get("search_term")
-    produto_crawl_qs = produto_svc.search_produtos(search_term)
+    produto_qs = produto_svc.search_produtos(search_term)
     limit = 20
-    return JsonResponse([prod.to_dict_json() for prod in produto_crawl_qs[:limit]], safe=False)
+    response = []
+    for prod in produto_qs[:limit]:
+        for prod_crawl in prod.produtocrawl_set.all():
+            if float(prod_crawl.preco) < 0.01:
+                continue
+            response.append(prod_crawl.to_dict_json())
+    return JsonResponse(response, safe=False)
 
 def whoami(request):
     i_am = {
