@@ -5,13 +5,15 @@ from django.shortcuts import render
 
 def search_produtos(request):
     search_term = request.GET.get("search_term")
+    limit = 50
     produto_qs = produto_svc.search_produtos(search_term)
-    limit = 20
     response = []
-    for prod in produto_qs[:limit]:
+    for prod in produto_qs:
         for prod_crawl in prod.produtocrawl_recente:
             if float(prod_crawl.preco) < 0.01:
                 continue
+            if len(response) > limit:
+                break
             response.append(prod_crawl.to_dict_json())
     return JsonResponse(response, safe=False)
 

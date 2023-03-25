@@ -13,9 +13,9 @@ CharField.register_lookup(Lower)
 def _sort_produto(produto, words):
     # a ideia aqui seria um preço médio por quantidade se não especificada uma
     preco_medio = float(mean(list(produto.produtocrawl_set.all().values_list("preco", flat=True))))
-    if produto.nome.lower().split()[0] == words[0].lower():
-        return -1000 + preco_medio
-    return preco_medio 
+    if produto.nome.strip().lower().split()[0] == words[0].lower():
+        return preco_medio - 1000
+    return preco_medio
 
 
 def search_produtos(search_term):
@@ -35,9 +35,10 @@ def search_produtos(search_term):
     produto_qs = produto_qs.prefetch_related(
         Prefetch(lookup="produtocrawl_set", queryset=ProdutoCrawl.objects.filter(crawl__in=mercado_crawl_map.values()).select_related("produto", "crawl__mercado"), to_attr="produtocrawl_recente")
     )
+    # print(produto_qs)
     # .annotate(preco_medio=Avg("produtocrawl__preco")).order_by("preco_medio") # preco médio e índice de correspondência
     # já resolver essa queryset pra ordenar em memória? Fica ruim por causa da paginação
-    sorted_produtos = sorted(produto_qs, key=partial(_sort_produto, words=words)) 
+    sorted_produtos = sorted(produto_qs, key=partial(_sort_produto, words=words))
     return sorted_produtos
     # o que melhora índice de correspondência? 
     # -> matches exatos
