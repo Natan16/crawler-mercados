@@ -32,6 +32,12 @@ header = {
 class SpaniSpider(scrapy.Spider):
     name = "spani"
 
+    custom_settings = {
+        'ITEM_PIPELINES': {
+            'crawlers.pipelines.ShibataPipeline': 300
+        }
+    }
+
     def __init__(self, filial=1, centro_distribuicao=10):
         self.centro_distribuicao = centro_distribuicao
         self.filial = filial

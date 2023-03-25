@@ -25,6 +25,12 @@ header = {
 class ShibataSpider(scrapy.Spider):
     name = "shibata"
 
+    custom_settings = {
+        'ITEM_PIPELINES': {
+            'crawlers.pipelines.ShibataPipeline': 300
+        }
+    }
+
     def __init__(self, filial=1, centro_distribuicao=13):
         self.centro_distribuicao = centro_distribuicao
         self.filial = filial
