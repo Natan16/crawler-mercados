@@ -67,7 +67,8 @@ export default {
       logoMap: {
         'SHIBATA': require('~/assets/shibata.png'),
         'SPANI': require('~/assets/spani.png'),
-        'CARREFOUR': require('~/assets/carrefour.png')
+        'CARREFOUR': require('~/assets/carrefour.png'),
+        'PAO_DE_ACUCAR': require('~/assets/pao_de_acucar.png')
       },
       loading: false
     }

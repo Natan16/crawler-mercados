@@ -29,3 +29,10 @@ class CarrefourItem(scrapy.Item):
     departamento=scrapy.Field()
     unidades=scrapy.Field()
     preco=scrapy.Field()
+
+class PaoDeAcucarItem(scrapy.Item):
+    item=scrapy.Field()
+    nome=scrapy.Field()
+    categoria=scrapy.Field()
+    departamento=scrapy.Field()
+    preco=scrapy.Field()

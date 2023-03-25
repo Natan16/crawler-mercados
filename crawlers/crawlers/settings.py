@@ -26,6 +26,7 @@ SPIDER_MODULES = ['crawlers.spiders']
 ITEM_PIPELINES = {
    'crawlers.pipelines.ShibataPipeline': 300,
    'crawlers.pipelines.CarrefourPipeline': 300,
+   'crawlers.pipelines.PaoDeAcucarPipeline': 300,
 }
 
 

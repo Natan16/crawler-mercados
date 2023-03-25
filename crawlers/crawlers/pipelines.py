@@ -46,3 +46,21 @@ class CarrefourPipeline:
     
     def close_spider(self, spider):
         spider.armazena_no_banco()
+
+
+class PaoDeAcucarPipeline:
+
+    def __init__(self):
+        pass
+
+    def process_item(self, pao_de_acucar_item, spider):
+        prod = Produto(
+            item=pao_de_acucar_item["item"],
+            nome=pao_de_acucar_item["nome"],
+            categoria=pao_de_acucar_item["categoria"],
+            departamento=pao_de_acucar_item["departamento"],
+        )
+        spider.produtos_map[pao_de_acucar_item["item"]] = (prod, pao_de_acucar_item["preco"])
+    
+    def close_spider(self, spider):
+        spider.armazena_no_banco()

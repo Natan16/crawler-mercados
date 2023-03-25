@@ -32,3 +32,12 @@ class Command(BaseCommand):
             unidade = "Carrefour - Jardim Serimbura",
             filial = 1
         )
+
+        Mercado.objects.get_or_create(
+            rede = "PAO_DE_ACUCAR",
+            cidade = "São José dos Campos",
+            uf = "SP",
+            bairro = "Aquarius",
+            unidade = "Pão de Açúcar - Aquarius",
+            filial = 461
+        )
