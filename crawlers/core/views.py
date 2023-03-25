@@ -9,7 +9,7 @@ def search_produtos(request):
     limit = 20
     response = []
     for prod in produto_qs[:limit]:
-        for prod_crawl in prod.produtocrawl_set.all():
+        for prod_crawl in prod.produtocrawl_recente:
             if float(prod_crawl.preco) < 0.01:
                 continue
             response.append(prod_crawl.to_dict_json())

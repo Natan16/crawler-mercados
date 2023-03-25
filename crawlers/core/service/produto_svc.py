@@ -32,9 +32,9 @@ def search_produtos(search_term):
            continue
         mercado_crawl_map[crawl.mercado.pk] = crawl
 
-    produto_qs.prefetch_related(
-        Prefetch("produtocrawl_set", ProdutoCrawl.objects.filter(crawl__in=mercado_crawl_map.values()).select_related("produto", "crawl__mercado"))
-    ).distinct()
+    produto_qs = produto_qs.prefetch_related(
+        Prefetch(lookup="produtocrawl_set", queryset=ProdutoCrawl.objects.filter(crawl__in=mercado_crawl_map.values()).select_related("produto", "crawl__mercado"), to_attr="produtocrawl_recente")
+    )
     # .annotate(preco_medio=Avg("produtocrawl__preco")).order_by("preco_medio") # preco médio e índice de correspondência
     # já resolver essa queryset pra ordenar em memória? Fica ruim por causa da paginação
     sorted_produtos = sorted(produto_qs, key=partial(_sort_produto, words=words)) 
