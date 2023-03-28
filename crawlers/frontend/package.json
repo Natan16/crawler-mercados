@@ -1,7 +1,7 @@
 {
-  "name": "crawlers",
+  "name": "mercado simplificado",
   "version": "1.0.0",
-  "description": "crawlers",
+  "description": "comparar os preços agora é fácil",
   "author": "Tony Lampada",
   "private": true,
   "scripts": {
