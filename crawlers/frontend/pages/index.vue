@@ -65,7 +65,7 @@ export default {
       produtos: [],
       term: null,
       logoMap: {
-        'SHIBATA': require('~/assets/shibata.png'),
+        'SHIBATA': require('~/assets/shibata.svg'),
         'SPANI': require('~/assets/spani.png'),
         'CARREFOUR': require('~/assets/carrefour.png'),
         'PAO_DE_ACUCAR': require('~/assets/pao_de_acucar.png')
