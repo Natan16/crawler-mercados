@@ -15,7 +15,9 @@ def search_produtos(request):
             if len(response) > limit:
                 break
             response.append(prod_crawl.to_dict_json())
+    # aqui melhor do que paginar é ir rolando e carregando mais, antes é preciso colocar algum monitoramento
     return JsonResponse(response, safe=False)
+    # se tem exatamente o mesmo nome é o mesmo produto, ou pelo menos pode ser mostrado como
 
 def whoami(request):
     i_am = {

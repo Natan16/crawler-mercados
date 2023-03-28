@@ -23,6 +23,7 @@ def search_produtos(search_term):
     # isso aqui vai fazer full table scan
     query = reduce(operator.and_, (Q(nome__lower__unaccent__icontains=word) for word in words))
     produto_qs = Produto.objects.filter(query)
+    # isso aqui tem de acontecer na categoria e no departamento também ... se não for mais conveniente colocar filtros
     crawl_qs = Crawl.objects.filter(
         created_at__gte=datetime.now() - timedelta(days=7)
     ).order_by("-created_at")

@@ -72,3 +72,6 @@ class ProdutoCrawl(models.Model):
             "mercado": {"unidade": self.crawl.mercado.unidade, "rede": self.crawl.mercado.rede},
             "preco": self.preco
         }
+
+
+# l = [set(p.produtocrawl_set.all().values_list("preco")) for p in Produto.objects.all()[:100] if len(set([pc.crawl.mercado_id for pc in ProdutoCrawl.objects.filter(produto=p)])) > 1]
