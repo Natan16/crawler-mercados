@@ -1,12 +1,20 @@
 <template>
   <v-app-bar color="blue-grey" dark fixed app clipped-right>
-    <!-- <v-app-bar-nav-icon @click.stop="state.drawer = !state.drawer" /> -->
-    <v-toolbar-title><button @click="home()">Mercado Simplificado</button></v-toolbar-title>
+    <v-toolbar-title class="ml-4">
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <button
+            v-bind="attrs"
+            v-on="on"
+            @click="home()"
+          >
+            <v-img :src="require('~/assets/logo.png')" style="width: 120px; object-fit: cover; object-position: 1000px;" />
+          </button>
+        </template>
+        <span>Ir para home</span>
+      </v-tooltip>
+    </v-toolbar-title>
     <v-spacer />
-    <!-- colocar um acesso à lista de compras aqui -->
-    <!-- <v-btn v-if="!logged_user" text dark ripple class="ma-0 ml-5" @click="open_login_dialog($event)">Login</v-btn> -->
-
-    <!-- <template v-slot:activator="{ on }"><v-btn v-on="on"> -->
     <v-menu v-if="logged_user" offset-y>
       <template v-slot:activator="{ on }">
         <v-btn icon v-on="on" class="ma-0 ml-5">
