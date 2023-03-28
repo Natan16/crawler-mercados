@@ -31,7 +31,7 @@ class ShibataSpider(scrapy.Spider):
         }
     }
 
-    def __init__(self, filial=1, centro_distribuicao=13):
+    def __init__(self, filial=1, centro_distribuicao=14):
         self.centro_distribuicao = centro_distribuicao
         self.filial = filial
         self.mercado = Mercado.objects.get(rede=ShibataSpider.name.upper(), filial=filial)
