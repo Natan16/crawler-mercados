@@ -3,43 +3,46 @@ export const state = () => ({
 })
 
 export const mutations = {
-  addItem (state, item) {
+  addProduto (state, result) {
     const unidades = []
-    item.produtos.forEach(produto => {
-      if (!unidades.includes(produto.mercado.unidade)) {
-        unidades.push(produto.mercado.unidade)
+    result.produtos.forEach(produto => produto.produto_crawl.forEach(item => {
+      if (!unidades.includes(item.mercado.unidade)) {
+        unidades.push(item.mercado.unidade)
         // ISOLAR NUM METODO
-        if (!state.mercadosLista[produto.mercado.unidade]) {
-          state.mercadosLista[produto.mercado.unidade] = {}
+        if (!state.mercadosLista[item.mercado.unidade]) {
+          state.mercadosLista[item.mercado.unidade] = {}
         }
-        if (!state.mercadosLista[produto.mercado.unidade][produto.id]) {
-          state.mercadosLista[produto.mercado.unidade][produto.id] = {...produto, quantidade: 1}
+        if (!state.mercadosLista[item.mercado.unidade][item.id]) {
+          state.mercadosLista[item.mercado.unidade][item.id] = {...item, quantidade: 1}
           return
         }
-        state.mercadosLista[produto.mercado.unidade][produto.id].quantidade += 1
+        state.mercadosLista[item.mercado.unidade][item.id].quantidade += 1
       }
-    })
-    state.mercadosLista.correspondencias[item.term] = unidades
+    }))
+    state.mercadosLista.correspondencias[result.term] = unidades
   },
-  addProduto (state, produto) {
-    if (!state.mercadosLista[produto.mercado.unidade]) {
-      state.mercadosLista[produto.mercado.unidade] = {}
+  addItem (state, item) {
+    if (!state.mercadosLista[item.mercado.unidade]) {
+      state.mercadosLista[item.mercado.unidade] = {}
     }
-    if (!state.mercadosLista[produto.mercado.unidade][produto.id]) {
-      state.mercadosLista[produto.mercado.unidade][produto.id] = {...produto, quantidade: 1}
+    if (!state.mercadosLista[item.mercado.unidade][item.id]) {
+      state.mercadosLista[item.mercado.unidade][item.id] = {...item, quantidade: 1}
       return
     }
-    state.mercadosLista[produto.mercado.unidade][produto.id].quantidade += 1
+    state.mercadosLista[item.mercado.unidade][item.id].quantidade += 1
   },
-  removeProduto (state, produto) {
-    if (state.mercadosLista[produto.mercado.unidade][produto.id] === undefined) {
+  removeItem (state, item) {
+    if (state.mercadosLista[item.mercado.unidade][item.id] === undefined) {
       return
     }
-    if (state.mercadosLista[produto.mercado.unidade][produto.id].quantidade <= 1) {
-      state.mercadosLista[produto.mercado.unidade][produto.id] = undefined
+    if (state.mercadosLista[item.mercado.unidade][item.id].quantidade <= 1) {
+      delete state.mercadosLista[item.mercado.unidade][item.id]
+      if (Object.keys(state.mercadosLista[item.mercado.unidade]).length === 0) {
+        delete Object.keys(state.mercadosLista[item.mercado.unidade])
+      }
       return
     }
-    state.mercadosLista[produto.mercado.unidade][produto.id].quantidade -= 1
+    state.mercadosLista[item.mercado.unidade][item.id].quantidade -= 1
   }
 }
 export const getters = {

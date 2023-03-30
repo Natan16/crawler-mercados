@@ -9,42 +9,40 @@
         hint="Clique enter para adicionar à lista"
         clearable
         autofocus
-        @keydown.enter="adicionarItem()"
+        @keydown.enter="adicionarProduto()"
         @keydown.esc="term = ''"
       />
     </v-flex>
     <loading v-if="loading" />
     <div
-      v-for="(item, idx) in produtos"
+      v-for="(produto, idx) in produtos"
       :key="idx"
     >
-      <v-flex xs12 class="ma-1">
-        <!-- a ordenação pode ficar separada num filtro parecido com o que já tem -->
-        <v-card>
-          <v-card-text>
-            <v-container>
-              <div>{{item.produto.nome}}</div>
-              <div>Mercado: {{item.mercado.unidade}}</div>
-              <v-img width="100px" :src="getLogo(item.mercado.rede)" />
+      <div
+        v-for="(item, idxItem) in produtos[idx].produto_crawl"
+        :key="idxItem"
+      >
+        <v-flex xs12 class="ma-1">
+          <!-- a ordenação pode ficar separada num filtro parecido com o que já tem -->
+          <v-card>
+            <v-card-text>
+              <v-container>
+                <div>{{produto.nome}}</div>
+                <div>Mercado: {{item.mercado.unidade}}</div>
+                <v-img width="100px" :src="getLogo(item.mercado.rede)" />
+                <v-spacer />
+                <div class="text-h4"><strong>R$ {{ item.preco }}</strong></div>
+              </v-container>
+            </v-card-text>
+            <v-card-actions>
               <v-spacer />
-              <div class="text-h4"><strong>R$ {{ item.preco }}</strong></div>
-              <!-- o preço tem que ficar mais à mostra -->
-              <!-- e o mercado pode ser substituído pelo logo -->
-              <!-- <v-text-field label="Password" type="password" required v-model="password" @keyup.enter="login()" /> -->
-              <!--  -->
-            </v-container>
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer />
-            <v-btn v-if="item.quantidade > 0" rounded class="ma-1" @click="removerProduto(idx)"><v-icon>mdi-minus</v-icon></v-btn>
-            <!-- a quantidade de cada produto vai ter no carrinho de compras ... o endpoint retorna o id? -->
-            <span v-if="item.quantidade > 0">{{item.quantidade}}</span>
-            <v-btn rounded class="ma-1" @click="adicionarProduto(idx)"><v-icon>mdi-plus</v-icon></v-btn>
-            <!-- <v-btn class="blue--text darken-1" text @click="close()">Cancel</v-btn> -->
-            <!-- <v-btn class="blue--text darken-1" text @click="login()" :loading="loading" :disabled="loading">Login</v-btn> -->
-          </v-card-actions>
-        </v-card>
-      </v-flex>
+              <v-btn v-if="item.quantidade > 0" rounded class="ma-1" @click="removerItem(idx, idxItem)"><v-icon>mdi-minus</v-icon></v-btn>
+              <span v-if="item.quantidade > 0">{{item.quantidade}}</span>
+              <v-btn rounded class="ma-1" @click="adicionarItem(idx, idxItem)"><v-icon>mdi-plus</v-icon></v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-flex>
+      </div>
     </div>
   </v-layout>
 </template>
@@ -90,45 +88,48 @@ export default {
       const response = await api.search_produto(term)
       this.produtos = response
       this.loading = false
-      // aqui tem que pegar do carrinho, caso já tenha
-      this.produtos.forEach(item => {
-        item.quantidade = 0
+      this.produtos.forEach(produto => {
+        produto.produto_crawl.forEach(item => { item.quantidade = 0 })
       })
-    }, 500),
+      this.updateQuantidades()
+    }, 1000),
     reset () {
       this.term = ''
       this.produtos = []
     },
-    adicionarItem () {
-      const item = {term: this.term, produtos: this.produtos}
-      this.$store.commit('lista/addItem', item)
+    // o toast tem que aparecer sempre
+    adicionarProduto () {
+      const result = {term: this.term, produtos: this.produtos}
+      this.$store.commit('lista/addProduto', result)
       Snacks.show(this.$store, {text: `${this.term} adicionado à lista`, timeout: 2000})
       this.updateQuantidades()
     },
-    adicionarProduto (idx) {
-      this.$store.commit('lista/addProduto', this.produtos[idx])
+    adicionarItem (idx, idxItem) {
+      this.$store.commit('lista/addItem', this.produtos[idx].produto_crawl[idxItem])
       const newProdutos = this.produtos[idx]
-      newProdutos.quantidade += 1
+      newProdutos.produto_crawl[idxItem].quantidade += 1
       Vue.set(this.produtos, idx, newProdutos)
-      Snacks.show(this.$store, {text: `${this.produtos[idx].produto.nome} adicionado à lista`, timeout: 2000})
+      // Snacks.show(this.$store, {text: `${this.produtos[idx].produto.nome} adicionado à lista`, timeout: 2000})
     },
-    removerProduto (idx) {
-      this.$store.commit('lista/removeProduto', this.produtos[idx])
+    removerItem (idx, idxItem) {
+      this.$store.commit('lista/removeItem', this.produtos[idx].produto_crawl[idxItem])
       const newProdutos = this.produtos[idx]
-      newProdutos.quantidade -= 1
+      newProdutos.produto_crawl[idxItem].quantidade -= 1
       Vue.set(this.produtos, idx, newProdutos)
-      Snacks.show(this.$store, {text: `${this.produtos[idx].produto.nome} removido da lista`, timeout: 2000})
+      // Snacks.show(this.$store, {text: `${this.produtos[idx].produto.nome} removido da lista`, timeout: 2000})
     },
     updateQuantidades () {
       const produtos = this.produtos
       const mercadosLista = this.$store.state.lista.mercadosLista
       produtos.forEach((produto, idx) => {
-        const newQuantidade = (mercadosLista[produto.mercado.unidade] && mercadosLista[produto.mercado.unidade][produto.id] && mercadosLista[produto.mercado.unidade][produto.id].quantidade) || 0
-        const newProduto = this.produtos[idx]
-        if (newProduto.quantidade !== newQuantidade) {
-          newProduto.quantidade = newQuantidade
-          Vue.set(this.produtos, idx, newProduto)
-        }
+        produto.produto_crawl.forEach((item, idxItem) => {
+          const newQuantidade = (mercadosLista[item.mercado.unidade] && mercadosLista[item.mercado.unidade][item.id] && mercadosLista[item.mercado.unidade][item.id].quantidade) || 0
+          const newProduto = this.produtos[idx]
+          if (newProduto.produto_crawl[idxItem].quantidade !== newQuantidade) {
+            newProduto.produto_crawl[idxItem].quantidade = newQuantidade
+            Vue.set(this.produtos, idx, newProduto)
+          }
+        })
       })
     },
     getLogo (rede) {

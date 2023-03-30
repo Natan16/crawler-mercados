@@ -8,16 +8,24 @@ def search_produtos(request):
     limit = 50
     produto_qs = produto_svc.search_produtos(search_term)
     response = []
-    for prod in produto_qs:
-        for prod_crawl in prod.produtocrawl_recente:
-            if float(prod_crawl.preco) < 0.01:
-                continue
-            if len(response) > limit:
-                break
-            response.append(prod_crawl.to_dict_json())
-    # aqui melhor do que paginar é ir rolando e carregando mais, antes é preciso colocar algum monitoramento
+    for prod in produto_qs[:limit]:
+        # TODO: construir um serializer decente
+        response.append(
+            {
+                "id": prod.pk,
+                "nome": prod.nome,
+                "produto_crawl": [
+                  {
+                    "id": pc.pk,
+                    "mercado": {"unidade": pc.crawl.mercado.unidade, "rede": pc.crawl.mercado.rede},
+                    "preco": pc.preco,
+                    "produto_id": prod.pk,
+                    "produto_nome": prod.nome
+                  } for pc in prod.produtocrawl_recente
+                ]
+            }
+        )
     return JsonResponse(response, safe=False)
-    # se tem exatamente o mesmo nome é o mesmo produto, ou pelo menos pode ser mostrado como
 
 def whoami(request):
     i_am = {

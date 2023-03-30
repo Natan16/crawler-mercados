@@ -2,27 +2,28 @@
   <div>
     <v-expansion-panels>
       <v-expansion-panel
-        v-for="(produtos,mercado) in mercadosLista"
+        v-for="(itens,mercado) in mercadosLista"
         :key="mercado"
       >
         <v-expansion-panel-header>
-          <!-- pluralize aqui -->
-          {{ mercado }}  - TOTAL: R${{totais[mercado]}} - {{quantidades[mercado]}} itens
-          <!-- é bom saber o que foi adicionado junto pra saber quais os itens indisponíveis em cada mercado -->
+          {{ mercado }}  - TOTAL: R${{totais[mercado]}} - {{quantidades[mercado]}} &nbsp;<span v-if="quantidades[mercado] > 1">itens</span><span v-else>item</span>
         </v-expansion-panel-header>
         <v-expansion-panel-content>
           <li
-            v-for="(produto,idx) in produtos" :key="idx"
+            v-for="(item,idx) in itens" :key="idx + updeteKey"
           >
-            {{ produto.produto.nome }} - R$ {{ produto.preco }} - {{ produto.quantidade }}Un - R$ {{ (produto.quantidade * produto.preco).toFixed(2) }}
+            <!-- clicar no nome do item pra ter alteranativas -->
+            {{ item.produto_nome }} - R$ {{ item.preco }} - <button @click="removerItem(mercado, idx)"><v-icon>mdi-minus</v-icon></button> {{ item.quantidade }}Un <button @click="adicionarItem(mercado, idx)"><v-icon>mdi-plus</v-icon></button> - R$ {{ (item.quantidade * item.preco).toFixed(2) }}
           </li>
           <br>
-          Itens indisponíveis:
-          <li
-            v-for="(produto,idx) in ausentes[mercado]" :key="idx"
-          >
-            <span color="red">{{ produto }}</span>
-          </li>
+          <div v-if="ausentes[mercado]">
+            Produtos indisponíveis:
+            <li
+              v-for="(produto,idx) in ausentes[mercado]" :key="idx"
+            >
+              <span color="red">{{ produto }}</span>
+            </li>
+          </div>
         </v-expansion-panel-content>
       </v-expansion-panel>
     </v-expansion-panels>
@@ -30,20 +31,19 @@
 </template>
 
 <script>
+// import Vue from 'vue'
 
 export default {
   layout: 'default',
-  //   components: {
-  //     todoList
-  //   },
   data () {
-    return {}
+    const {correspondencias: _, ...lista} = this.$store.state.lista.mercadosLista
+    return {mercadosLista: lista}
   },
   computed: {
-    mercadosLista () {
-      const {correspondencias: _, ...lista} = this.$store.state.lista.mercadosLista
-      return lista
-    },
+    // mercadosLista () {
+    // const {correspondencias: _, ...lista} = this.$store.state.lista.mercadosLista
+    // return lista
+    // },
     totais () {
       const totais = {}
       const lista = this.mercadosLista
@@ -72,7 +72,7 @@ export default {
       Object.keys(this.mercadosLista).forEach(mercado => {
         Object.keys(correspondencias).forEach(corresp => {
           if (!correspondencias[corresp].includes(mercado)) {
-            if (!ausentes.mercado) {
+            if (!Object.keys(ausentes).includes(mercado)) {
               ausentes[mercado] = [corresp]
             } else {
               ausentes[mercado].push(corresp)
@@ -81,6 +81,18 @@ export default {
         })
       })
       return ausentes
+    }
+  },
+  methods: {
+    adicionarItem (mercado, idx) {
+      this.$store.commit('lista/addItem', this.mercadosLista[mercado][idx])
+      const {correspondencias: _, ...lista} = this.$store.state.lista.mercadosLista
+      this.mercadosLista = lista
+    },
+    removerItem (mercado, idx) {
+      this.$store.commit('lista/removeItem', this.mercadosLista[mercado][idx])
+      const {correspondencias: _, ...lista} = this.$store.state.lista.mercadosLista
+      this.mercadosLista = lista
     }
   }
 }
