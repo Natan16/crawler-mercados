@@ -1,3 +1,4 @@
+# qualidade de código
 format: 
 	isort --old-finders --profile black --line-length 120 .
 	black --line-length 120 .
@@ -11,7 +12,7 @@ mypy:
 ruff: 
 	ruff --line-length 120 .
 
-
+# deploy
 all: build get-login retag push
 
 build:
@@ -33,3 +34,10 @@ push: retag get-login
 	@echo push new image...
 	docker push 415395292850.dkr.ecr.sa-east-1.amazonaws.com/crawlers:latest
 	@echo
+
+# crawlear
+crawl:
+	scrapy crawl spani
+	scrapy crawl shibata
+	scrapy crawl carrefour
+	scrapy crawl pao_de_acucar
