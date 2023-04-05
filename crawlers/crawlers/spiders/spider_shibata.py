@@ -32,7 +32,7 @@ class ShibataSpider(BaseSpider):
         }
     }
 
-    def __init__(self, filial=1, centro_distribuicao=14):
+    def __init__(self, filial=1, centro_distribuicao=13):
         # não tem como pegar o centro de distribuição de algum canto?
         # localização geográfica parece um must também, será que é agora que eu vou aprender o que é esse tal de postgis?
         self.centro_distribuicao = centro_distribuicao
