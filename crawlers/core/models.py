@@ -40,9 +40,9 @@ class Mercado(models.Model):
     bairro = models.CharField(max_length=1024, blank=True, null=True)
     unidade = models.CharField(max_length=1024, blank=True, null=True)
     filial = models.PositiveSmallIntegerField(default=1)
-     # logo_url
-    # TODO: rede+filial unique toguether
-    
+    latitude = models.FloatField(blank=True, null=True)
+    longitude = models.FloatField(blank=True, null=True)
+
 class Produto(models.Model):
     item = models.CharField(max_length=512, unique=True)
     nome = models.CharField(max_length=512, null=True, blank=True)
