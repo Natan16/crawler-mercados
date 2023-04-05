@@ -3,7 +3,9 @@
 # Please refer to the documentation for information on how to create and manage
 # your spiders.
 import scrapy
+import re
 from core.models import Crawl, Mercado, Produto, ProdutoCrawl
+from decimal import Decimal as D
 
 
 class BaseSpider(scrapy.Spider):

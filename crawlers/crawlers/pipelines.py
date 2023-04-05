@@ -6,11 +6,8 @@
 
 from core.models import Produto
 
-# useful for handling different item types with a single interface
-from itemadapter import ItemAdapter
 
-
-class ShibataPipeline:
+class VipCommercePipeline:
 
     def __init__(self):
         pass

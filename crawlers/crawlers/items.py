@@ -12,7 +12,7 @@ class ParserModuleItem(scrapy.Item):
     pass
 
 
-class ShibataItem(scrapy.Item):
+class VipCommerceItem(scrapy.Item):
     item=scrapy.Field()
     nome=scrapy.Field()
     categoria=scrapy.Field()
