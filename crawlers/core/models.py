@@ -55,7 +55,6 @@ class Produto(models.Model):
     volume_ml = DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     unidades = models.IntegerField(default=1)
 
-
 class Crawl(models.Model):
     mercado = models.ForeignKey(Mercado, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now_add=True)
