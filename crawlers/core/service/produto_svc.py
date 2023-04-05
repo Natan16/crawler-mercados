@@ -1,7 +1,7 @@
 import operator
 from core.models import Produto, ProdutoCrawl, Crawl
 from datetime import datetime, timedelta
-from django.db.models import CharField, Q, Prefetch, Avg
+from django.db.models import CharField, Q, Prefetch
 from django.db.models.functions import Lower
 from functools import reduce
 from numpy import mean
@@ -35,7 +35,12 @@ def search_produtos(search_term):
         mercado_crawl_map[crawl.mercado.pk] = crawl
 
     produto_qs = produto_qs.prefetch_related(
-        Prefetch(lookup="produtocrawl_set", queryset=ProdutoCrawl.objects.filter(crawl__in=mercado_crawl_map.values()).select_related("produto", "crawl__mercado"), to_attr="produtocrawl_recente")
+        Prefetch(
+            lookup="produtocrawl_set",
+            queryset=ProdutoCrawl.objects.filter(
+                crawl__in=mercado_crawl_map.values()
+            ).select_related("produto", "crawl__mercado").order_by("preco"),
+            to_attr="produtocrawl_recente")
     )
     # .annotate(preco_medio=Avg("produtocrawl__preco")).order_by("preco_medio") # preco médio e índice de correspondência
     # já resolver essa queryset pra ordenar em memória? Fica ruim por causa da paginação
