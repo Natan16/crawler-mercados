@@ -59,6 +59,11 @@ class Produto(models.Model):
     peso_liquido = DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     volume_ml = DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     unidades = models.IntegerField(default=1)
+# TODO: mesmo nome exato tem que ser mapeado como se fosse o mesmo produto
+# mas antes disso é bem mais importante ter mais informação ( outros mercados )
+# tem que tirar qos espaços entre o peso e sua unidade
+# busca vazia tem de ter alguma menssagem sendo exibida ... algo que dê detalhes de como pesquisar
+
 
 class Crawl(models.Model):
     mercado = models.ForeignKey(Mercado, on_delete=models.PROTECT)
