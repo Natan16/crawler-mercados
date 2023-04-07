@@ -8,7 +8,7 @@ class Coords:
 
         # TODO: colocar alguns validações aqui
 
-def distance(p1: Coords, p2: Coords):
+def distancia(p1: Coords, p2: Coords):
     """
     distância aproximada (em metros) entre 2 coordenadas
     """

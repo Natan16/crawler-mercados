@@ -5,7 +5,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         
-        # isso aqui podia ser na hora de rodar o crawler mesmo
+
         Mercado.objects.get_or_create(
             rede = "SHIBATA",
             cidade = "São José dos Campos",
@@ -14,6 +14,7 @@ class Command(BaseCommand):
             unidade = "Shibata - Jardim Oriente",
             filial = 1
         )
+        # lat -23.237265, long = -45.896721
 
         Mercado.objects.get_or_create(
             rede = "SPANI",
@@ -23,6 +24,7 @@ class Command(BaseCommand):
             unidade = "Spani - Aquarius",
             filial = 1
         )
+        # lat -23.225743, long = -45.910693
 
         Mercado.objects.get_or_create(
             rede = "CARREFOUR",
@@ -32,6 +34,7 @@ class Command(BaseCommand):
             unidade = "Carrefour - Jardim Serimbura",
             filial = 1
         )
+        # lat -23.222826, long = -45.905961
 
         Mercado.objects.get_or_create(
             rede = "PAO_DE_ACUCAR",
@@ -41,3 +44,4 @@ class Command(BaseCommand):
             unidade = "Pão de Açúcar - Aquarius",
             filial = 461
         )
+        # lat -23.219339, long = -45.905450

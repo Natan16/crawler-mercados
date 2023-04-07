@@ -1,6 +1,7 @@
 
 from django.db import models
 from django.db.models.fields import DecimalField
+from commons.geoutils import Coords
 
 UFS = [
     ('AC', 'Acre'),
@@ -42,6 +43,10 @@ class Mercado(models.Model):
     filial = models.PositiveSmallIntegerField(default=1)
     latitude = models.FloatField(blank=True, null=True)
     longitude = models.FloatField(blank=True, null=True)
+
+    @property
+    def coordenadas(self):
+        return Coords(self.latitude, self.longitude)
 
 class Produto(models.Model):
     item = models.CharField(max_length=512, unique=True)
