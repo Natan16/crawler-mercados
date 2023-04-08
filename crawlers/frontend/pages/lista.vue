@@ -27,9 +27,9 @@
         </v-expansion-panel-content>
       </v-expansion-panel>
     </v-expansion-panels>
-    <v-else>
+    <div v-else>
       Sua lista de compras está vazia, retorne à pagina inicial para adicionar produtos
-    </v-else>
+    </div>
   </div>
 </template>
 
