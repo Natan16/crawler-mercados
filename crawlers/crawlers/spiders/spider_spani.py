@@ -2,12 +2,10 @@
 
 
 import json
-import re
 from decimal import Decimal as D
 from functools import partial
 
 import scrapy
-from core.models import Crawl, Mercado
 from crawlers.items import VipCommerceItem
 from crawlers.spiders import BaseSpider
 

@@ -1,10 +1,8 @@
 import json
-import re
 from decimal import Decimal as D
 from functools import partial
 
 import scrapy
-from core.models import Crawl, Mercado, Produto, ProdutoCrawl
 from scrapy.shell import inspect_response
 from crawlers.spiders import BaseSpider
 
@@ -34,7 +32,6 @@ class ShibataSpider(BaseSpider):
 
     def __init__(self, filial=1, centro_distribuicao=13):
         # não tem como pegar o centro de distribuição de algum canto?
-        # localização geográfica parece um must também, será que é agora que eu vou aprender o que é esse tal de postgis?
         self.centro_distribuicao = centro_distribuicao
         super().__init__("SHIBATA", filial)
 
@@ -60,7 +57,7 @@ class ShibataSpider(BaseSpider):
                 unidades = produto["produto"]["quantidade_unidade_diferente"],
                 preco = produto["preco"]
             )
-        
+
     def parse_categorias(self, response):
         categorias_tree = json.loads(response.text)["data"]
         for dep in categorias_tree:
