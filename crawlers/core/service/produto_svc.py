@@ -11,7 +11,6 @@ from functools import partial
 CharField.register_lookup(Lower)
 
 def _sort_produto(produto, words):
-    # a ideia aqui seria um preço médio por quantidade se não especificada uma
     preco_medio = float(mean(list(produto.produtocrawl_set.all().values_list("preco", flat=True))))
     if produto.nome.strip().lower().split()[0] == words[0].lower():
         return preco_medio - 1000
