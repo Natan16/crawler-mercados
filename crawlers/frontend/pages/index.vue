@@ -92,8 +92,7 @@ export default {
       const response = await api.search_produto(term)
       this.produtos = response
       this.loading = false
-      if (!this.produtos) {
-        // pode ser que tenha retornado produtos, mas nenhum mercado tenha ele disponível
+      if (this.produtos.length === 0 || !this.produtos.some((produto) => produto.produto_crawl.length > 0)) {
         this.buscaVazia = true
       }
       this.produtos.forEach(produto => {
