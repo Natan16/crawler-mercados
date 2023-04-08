@@ -8,7 +8,7 @@
           v-on="on"
           @click="home()"
         >
-          <v-app-bar-title>
+          <v-app-bar-title class="ml-10">
             Mercado Simplificado
           </v-app-bar-title>
         </button>
