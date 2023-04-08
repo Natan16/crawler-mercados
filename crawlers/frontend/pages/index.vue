@@ -1,19 +1,23 @@
 <template>
   <v-layout column>
-    <v-flex row xs6 class="pa-4">
+    <v-flex row xs6 class="pa-4 pt-10">
       <v-text-field
-        prepend-icon="mdi-magnify"
+        prepend-inner-icon="mdi-magnify"
         outlined
         v-model="term"
         label="Digite o produto que deseja buscar"
         hint="Clique enter para adicionar à lista"
         clearable
         autofocus
+        rounded
         @keydown.enter="adicionarProduto()"
         @keydown.esc="term = ''"
       />
     </v-flex>
     <loading v-if="loading" />
+    <div v-if="buscaVazia">
+      Nenhum produto corresponde à sua pesquisa
+    </div>
     <div
       v-for="(produto, idx) in produtos"
       :key="idx"
@@ -68,26 +72,30 @@ export default {
         'CARREFOUR': require('~/assets/carrefour.png'),
         'PAO_DE_ACUCAR': require('~/assets/pao_de_acucar.png')
       },
-      loading: false
+      loading: false,
+      buscaVazia: false
     }
   },
   computed: {
   },
   watch: {
     term (value) {
+      this.buscaVazia = false
       if (value?.length >= 3) {
         this.loading = true
         this.searchProduto(value)
       }
     }
   },
-  mounted () {
-  },
   methods: {
     searchProduto: debounce(async function (term) {
       const response = await api.search_produto(term)
       this.produtos = response
       this.loading = false
+      if (!this.produtos) {
+        // pode ser que tenha retornado produtos, mas nenhum mercado tenha ele disponível
+        this.buscaVazia = true
+      }
       this.produtos.forEach(produto => {
         produto.produto_crawl.forEach(item => { item.quantidade = 0 })
       })

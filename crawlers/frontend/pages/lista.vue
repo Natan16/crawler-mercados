@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-expansion-panels>
+    <v-expansion-panels v-if="mercadosLista">
       <v-expansion-panel
         v-for="(itens,mercado) in mercadosLista"
         :key="mercado"
@@ -27,11 +27,13 @@
         </v-expansion-panel-content>
       </v-expansion-panel>
     </v-expansion-panels>
+    <v-else>
+      Sua lista de compras está vazia, retorne à pagina inicial para adicionar produtos
+    </v-else>
   </div>
 </template>
 
 <script>
-// import Vue from 'vue'
 
 export default {
   layout: 'default',
@@ -40,10 +42,6 @@ export default {
     return {mercadosLista: lista}
   },
   computed: {
-    // mercadosLista () {
-    // const {correspondencias: _, ...lista} = this.$store.state.lista.mercadosLista
-    // return lista
-    // },
     totais () {
       const totais = {}
       const lista = this.mercadosLista
