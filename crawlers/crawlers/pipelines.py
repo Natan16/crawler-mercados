@@ -61,3 +61,21 @@ class PaoDeAcucarPipeline:
     
     def close_spider(self, spider):
         spider.armazena_no_banco()
+
+
+class TendaPipeline:
+
+    def __init__(self):
+        pass
+
+    def process_item(self, tenda_item, spider):
+        prod = Produto(
+            item=tenda_item["item"],
+            nome=tenda_item["nome"],
+            categoria=tenda_item["categoria"],
+            departamento=tenda_item["departamento"],
+        )
+        spider.produtos_map[tenda_item["item"]] = (prod, tenda_item["preco"])
+
+    def close_spider(self, spider):
+        spider.armazena_no_banco()

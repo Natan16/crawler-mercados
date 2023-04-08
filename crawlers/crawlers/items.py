@@ -36,3 +36,11 @@ class PaoDeAcucarItem(scrapy.Item):
     categoria=scrapy.Field()
     departamento=scrapy.Field()
     preco=scrapy.Field()
+
+class TendaItem(scrapy.Item):
+    item=scrapy.Field()
+    nome=scrapy.Field()
+    categoria=scrapy.Field()
+    departamento=scrapy.Field()
+    preco=scrapy.Field()
+    # logo vai ter o preço de atacado aqui

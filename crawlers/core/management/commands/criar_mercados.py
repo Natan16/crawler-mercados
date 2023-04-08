@@ -45,3 +45,14 @@ class Command(BaseCommand):
             filial = 461
         )
         # lat -23.219339, long = -45.905450
+
+        Mercado.objects.get_or_create(
+            rede = "TENDA",
+            cidade = "São José dos Campos",
+            uf = "SP",
+            bairro = "Jardim Satélite",
+            unidade = "Tenda Atacado - São José dos Campos",
+            filial = 1,
+            latitude = -23.219308,
+            longitude = -45.895301
+        )
