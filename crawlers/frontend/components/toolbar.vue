@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar :elevation="12" color="#2E7D32" dark fixed app clipped-right>
+  <v-app-bar :elevation="12" color="#01579B" dark fixed app clipped-right>
     <v-app-bar-nav-icon @click.stop="state.drawerLeft = !state.drawerLeft" />
     <v-tooltip bottom>
       <template v-slot:activator="{ on, attrs }">
