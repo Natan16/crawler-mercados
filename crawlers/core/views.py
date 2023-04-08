@@ -1,4 +1,4 @@
-from core.service.produto_svc import search_produtos
+from core.service.produto_svc import produtos
 from core.service.mercado_svc import mercados_proximos
 from core.forms import MercadosProximosForm
 from django.http import JsonResponse
@@ -7,7 +7,7 @@ from django.http import JsonResponse
 def search_produtos(request):
     search_term = request.GET.get("search_term")
     limit = 50
-    produto_qs = search_produtos(search_term)
+    produto_qs = produtos(search_term)
     response = []
     for prod in produto_qs[:limit]:
         # TODO: construir um serializer decente

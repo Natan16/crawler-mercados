@@ -19,7 +19,7 @@ def _sort_produto(produto, words):
     return preco_medio
 
 
-def search_produtos(search_term):
+def produtos(search_term):
     words = search_term.split()
     # isso aqui vai fazer full table scan
     query = reduce(operator.and_, (Q(nome__lower__unaccent__icontains=word) for word in words))
