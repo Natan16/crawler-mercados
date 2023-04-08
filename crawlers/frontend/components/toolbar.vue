@@ -55,7 +55,21 @@
             v-bind="attrs"
             v-on="on"
           >
-            mdi-cart-outline
+            mdi-filter
+          </v-icon>
+        </button>
+      </template>
+      <span>Filtrar</span>
+    </v-tooltip>
+    <v-tooltip bottom>
+      <template v-slot:activator="{ on, attrs }">
+        <button @click="pageLista()">
+          <v-icon
+            size="200%"
+            v-bind="attrs"
+            v-on="on"
+          >
+            mdi-cart
           </v-icon>
         </button>
       </template>
