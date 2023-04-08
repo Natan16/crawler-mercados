@@ -8,7 +8,7 @@
           v-on="on"
           @click="home()"
         >
-          <v-app-bar-title class="ml-10">
+          <v-app-bar-title>
             Mercado Simplificado
           </v-app-bar-title>
         </button>
@@ -30,6 +30,7 @@
       </v-tooltip>
     </v-app-bar-nav-icon>
     <v-app-bar-nav-icon @click.stop="pageLista()">
+      <!-- a ideia aqui é começar com um filtro de distância e um de mercados (rede) -->
       <v-tooltip bottom>
         <template v-slot:activator="{ on, attrs }">
           <v-icon
