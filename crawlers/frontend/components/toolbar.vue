@@ -55,7 +55,7 @@
             v-bind="attrs"
             v-on="on"
           >
-            mdi-format-list-bulleted
+            mdi-cart-outline
           </v-icon>
         </button>
       </template>
