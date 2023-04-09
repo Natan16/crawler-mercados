@@ -5,7 +5,7 @@ export const state = () => ({
 export const mutations = {
   addProduto (state, result) {
     const unidades = []
-    result.produtos.forEach(produto => produto.produto_crawl.forEach(item => {
+    result.produtos[0].produto_crawl.forEach(item => {
       if (!unidades.includes(item.mercado.unidade)) {
         unidades.push(item.mercado.unidade)
         // ISOLAR NUM METODO
@@ -18,7 +18,7 @@ export const mutations = {
         }
         state.mercadosLista[item.mercado.unidade][item.id].quantidade += 1
       }
-    }))
+    })
     state.mercadosLista.correspondencias[result.term] = unidades
   },
   addItem (state, item) {

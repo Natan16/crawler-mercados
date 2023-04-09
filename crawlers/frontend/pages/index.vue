@@ -24,26 +24,27 @@
     >
       <v-card class="pb-4 ma-1">
         <v-card-title v-if="produtos[idx].produto_crawl.length >= 0" class="text-center">{{produto.nome}}</v-card-title>
-        <div
-          v-for="(item, idxItem) in produtos[idx].produto_crawl"
-          :key="idxItem"
-        >
-          <!-- a ordenação pode ficar separada num filtro parecido com o que já tem -->
-          <v-card-text class="text-center" width="400px">
-            <v-container>
-              <div>{{item.mercado.unidade}}</div>
-              <v-img height="60px" width="300px" contain :src="getLogo(item.mercado.rede)" />
+        <v-layout row>
+          <div
+            v-for="(item, idxItem) in produtos[idx].produto_crawl"
+            :key="idxItem"
+          >
+            <v-card-text class="text-center" width="400px">
+              <v-container>
+                <div>{{item.mercado.unidade}}</div>
+                <v-img height="60px" width="300px" contain :src="getLogo(item.mercado.rede)" />
+                <v-spacer />
+                <div class="text-h4"><strong>R$ {{ item.preco }}</strong></div>
+              </v-container>
+            </v-card-text>
+            <v-card-actions>
               <v-spacer />
-              <div class="text-h4"><strong>R$ {{ item.preco }}</strong></div>
-            </v-container>
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer />
-            <v-btn v-if="item.quantidade > 0" rounded class="ma-1" @click="removerItem(idx, idxItem)"><v-icon>mdi-minus</v-icon></v-btn>
-            <span v-if="item.quantidade > 0">{{item.quantidade}}</span>
-            <v-btn rounded class="ma-1" @click="adicionarItem(idx, idxItem)"><v-icon>mdi-plus</v-icon></v-btn>
-          </v-card-actions>
-        </div>
+              <v-btn v-if="item.quantidade > 0" rounded class="ma-1" @click="removerItem(idx, idxItem)"><v-icon>mdi-minus</v-icon></v-btn>
+              <span v-if="item.quantidade > 0">{{item.quantidade}}</span>
+              <v-btn rounded class="ma-1" @click="adicionarItem(idx, idxItem)"><v-icon>mdi-plus</v-icon></v-btn>
+            </v-card-actions>
+          </div>
+        </v-layout>
       </v-card>
     </div>
   </v-layout>
