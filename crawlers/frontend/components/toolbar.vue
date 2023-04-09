@@ -16,7 +16,7 @@
       <span>Ir para página inicial</span>
     </v-tooltip>
     <v-spacer />
-    <v-app-bar-nav-icon @click.stop="pageLista()">
+    <v-app-bar-nav-icon @click.stop="open_filter_dialog">
       <v-tooltip bottom>
         <template v-slot:activator="{ on, attrs }">
           <v-icon
@@ -43,19 +43,18 @@
         <span>Ir para lista de compras</span>
       </v-tooltip>
     </v-app-bar-nav-icon>
-    <!-- <login-dialog ref="login_dialog" /> -->
-    <!-- vai dar show num dialog que fica aqui -->
+    <filter-dialog ref="filter_dialog" />
   </v-app-bar>
 </template>
 
 <script>
-// import loginDialog from '~/components/login-dialog.vue'
+import filterDialog from '~/components/filter-dialog.vue'
 import Snacks from '~/helpers/Snacks.js'
 import api from '~api'
 
 export default {
   components: {
-    // loginDialog
+    filterDialog
   },
   props: ['state'],
   computed: {
@@ -64,8 +63,8 @@ export default {
     }
   },
   methods: {
-    open_login_dialog (evt) {
-      this.$refs.login_dialog.open()
+    open_filter_dialog (evt) {
+      this.$refs.filter_dialog.open()
       evt.stopPropagation()
     },
     async logout () {

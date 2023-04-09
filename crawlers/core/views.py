@@ -10,21 +10,24 @@ def search_produtos(request):
     produto_qs = produtos(search_term)
     response = []
     for prod in produto_qs[:limit]:
+        serialized_produto = {
+            "id": prod.pk,
+            "nome": prod.nome,
+            "produto_crawl": [
+                {
+                "id": pc.pk,
+                "mercado": {"unidade": pc.crawl.mercado.unidade, "rede": pc.crawl.mercado.rede},
+                "preco": pc.preco,
+                "produto_id": prod.pk,
+                "produto_nome": prod.nome
+                } for pc in prod.produtocrawl_recente
+            ]
+        }
+        if len(serialized_produto["produto_crawl"]) == 0:
+            continue
         # TODO: construir um serializer decente
         response.append(
-            {
-                "id": prod.pk,
-                "nome": prod.nome,
-                "produto_crawl": [
-                  {
-                    "id": pc.pk,
-                    "mercado": {"unidade": pc.crawl.mercado.unidade, "rede": pc.crawl.mercado.rede},
-                    "preco": pc.preco,
-                    "produto_id": prod.pk,
-                    "produto_nome": prod.nome
-                  } for pc in prod.produtocrawl_recente
-                ]
-            }
+            serialized_produto
         )
     return JsonResponse(response, safe=False)
 

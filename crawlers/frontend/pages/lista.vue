@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-expansion-panels v-if="mercadosLista">
+    <v-expansion-panels v-if="Object.keys(mercadosLista).length > 0">
       <v-expansion-panel
         v-for="(itens,mercado) in mercadosLista"
         :key="mercado"
