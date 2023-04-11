@@ -21,12 +21,14 @@ def _sort_produto(produto, words):
 
 def produtos(search_term):
     words = search_term.split()
-    # isso aqui vai fazer full table scan
-    # vish, se virar nomes, vai ficar mais ainda difícil a busca, esse é um processo que tem de ser feito por partes!
-    # mas antes disso, vou melhorar o front mais um cadinho
-    # a quantidade precisa ser separada do nome e das unidades também
-    # mesmo nome normalizado = mesmo produto => tem que ser pensado na hora de crawlear ... pior que só o carrefour
-    # parece ter esse problema ... talvez excluir ele temporariamente do meu crawler seja bom o bastante 
+
+    # tem que ter um pré-processamento das palavras
+    # ... do que vai consistir isso?
+    # identificar o que é quantidade e padronizar 1.5l 1,5l 1,5 l e 1.5 l tem que ser tudo equivalente
+    # pode até ter uma forma de selecionar a quantidade ... isso aqui é um bom começo
+    # isolar unidades e quantidade em campos separados é fundamental pra fazer comparações
+    # aproveitar que tá nessa e já fazer marca também
+
     query = reduce(operator.and_, (Q(nome__lower__unaccent__icontains=word) for word in words))
     produto_qs = Produto.objects.filter(query)
     crawl_qs = Crawl.objects.filter(
@@ -46,9 +48,5 @@ def produtos(search_term):
             ).select_related("produto", "crawl__mercado").order_by("preco"),
             to_attr="produtocrawl_recente")
     )
-    # .annotate(preco_medio=Avg("produtocrawl__preco")).order_by("preco_medio") # preco médio e índice de correspondência
-    # já resolver essa queryset pra ordenar em memória? Fica ruim por causa da paginação
     sorted_produtos = sorted(produto_qs, key=partial(_sort_produto, words=words))
     return sorted_produtos
-    # ser capaz de identificar e separar tipo de produto e marca ... a separação pode acontecer no próprio banco
-    # mostrar esses respostar de segunda classe como resultado à parte e, quem sabe, de maneira mais condensada
