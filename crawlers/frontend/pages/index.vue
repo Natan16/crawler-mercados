@@ -25,7 +25,6 @@
       <v-container v-if="mobile">
         <div v-if="produtos[idx].produto_crawl.length >= 0" class="text-center">{{produto.nome}}</div>
         <v-slide-group
-          v-model="model"
           selected-class="bg-success"
         >
           <v-slide-item
