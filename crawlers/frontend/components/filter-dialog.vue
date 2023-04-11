@@ -57,7 +57,8 @@ export default {
       username: '',
       password: '',
       error: false,
-      distancia: 10
+      distancia: 10,
+      mymodel: null
     }
   },
   methods: {

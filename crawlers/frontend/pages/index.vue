@@ -1,6 +1,6 @@
 <template>
-  <v-layout column>
-    <v-flex class="pa-4 pt-10">
+  <div>
+    <div class="pa-4 pt-10">
       <v-text-field
         prepend-inner-icon="mdi-magnify"
         outlined
@@ -13,7 +13,7 @@
         @keydown.enter="adicionarProduto()"
         @keydown.esc="term = ''"
       />
-    </v-flex>
+    </div>
     <loading v-if="loading" />
     <div v-if="buscaVazia">
       Nenhum produto corresponde à sua pesquisa
@@ -22,32 +22,66 @@
       v-for="(produto, idx) in produtos"
       :key="idx"
     >
-      <v-card class="pb-4 ma-1">
-        <v-card-title v-if="produtos[idx].produto_crawl.length >= 0" class="text-center">{{produto.nome}}</v-card-title>
-        <v-layout row>
-          <div
+      <v-container v-if="mobile">
+        <div v-if="produtos[idx].produto_crawl.length >= 0" class="text-center">{{produto.nome}}</div>
+        <v-slide-group
+          v-model="model"
+          selected-class="bg-success"
+        >
+          <v-slide-item
+            align="center" justify="center"
             v-for="(item, idxItem) in produtos[idx].produto_crawl"
             :key="idxItem"
           >
-            <v-card-text class="text-center" width="400px">
-              <v-container>
-                <div>{{item.mercado.unidade}}</div>
-                <v-img height="60px" width="300px" contain :src="getLogo(item.mercado.rede)" />
+            <v-card class="ma-1" width="150px">
+              <v-card-text width="150px" height="100px" class="text-center">
+                <div class="text-truncate bg-secondary">
+                  <!-- podia ser um short name aqui -->
+                  <!-- o tamanho da fonte também não ajuda -->
+                  <span>{{item.mercado.unidade}}</span>
+                  <v-img height="30px" width="100px" contain :src="getLogo(item.mercado.rede)" />
+                </div>
+                <div class="text-h6"><strong>R$ {{ item.preco }}</strong></div>
+              </v-card-text>
+              <v-card-actions>
+                <v-btn v-if="item.quantidade > 0" width="16px" rounded x-small @click="removerItem(idx, idxItem)"><v-icon>mdi-minus</v-icon></v-btn>
+                <!-- alinhar o número no centro -->
+                <span class="ml-6" v-if="item.quantidade > 0">{{item.quantidade}}</span>
                 <v-spacer />
-                <div class="text-h4"><strong>R$ {{ item.preco }}</strong></div>
-              </v-container>
-            </v-card-text>
-            <v-card-actions>
-              <v-spacer />
-              <v-btn v-if="item.quantidade > 0" rounded class="ma-1" @click="removerItem(idx, idxItem)"><v-icon>mdi-minus</v-icon></v-btn>
-              <span v-if="item.quantidade > 0">{{item.quantidade}}</span>
-              <v-btn rounded class="ma-1" @click="adicionarItem(idx, idxItem)"><v-icon>mdi-plus</v-icon></v-btn>
-            </v-card-actions>
-          </div>
-        </v-layout>
-      </v-card>
+                <v-btn width="16px" rounded x-small @click="adicionarItem(idx, idxItem)"><v-icon>mdi-plus</v-icon></v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-slide-item>
+        </v-slide-group>
+      </v-container>
+      <v-container v-else>
+        <v-card class="pb-4 ma-1">
+          <v-card-title v-if="produtos[idx].produto_crawl.length >= 0" class="text-center">{{produto.nome}}</v-card-title>
+          <v-layout row>
+            <div
+              v-for="(item, idxItem) in produtos[idx].produto_crawl"
+              :key="idxItem"
+            >
+              <v-card-text class="text-center" width="400px">
+                <v-container>
+                  <div>{{item.mercado.unidade}}</div>
+                  <v-img height="60px" width="300px" contain :src="getLogo(item.mercado.rede)" />
+                  <v-spacer />
+                  <div class="text-h4"><strong>R$ {{ item.preco }}</strong></div>
+                </v-container>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer />
+                <v-btn v-if="item.quantidade > 0" rounded class="ma-1" @click="removerItem(idx, idxItem)"><v-icon>mdi-minus</v-icon></v-btn>
+                <span v-if="item.quantidade > 0">{{item.quantidade}}</span>
+                <v-btn rounded class="ma-1" @click="adicionarItem(idx, idxItem)"><v-icon>mdi-plus</v-icon></v-btn>
+              </v-card-actions>
+            </div>
+          </v-layout>
+        </v-card>
+      </v-container>
     </div>
-  </v-layout>
+  </div>
 </template>
 
 <script>
@@ -67,16 +101,19 @@ export default {
       term: null,
       logoMap: {
         'SHIBATA': require('~/assets/shibata.svg'),
-        'SPANI': require('~/assets/spani.png'),
-        'CARREFOUR': require('~/assets/carrefour.png'),
-        'PAO_DE_ACUCAR': require('~/assets/pao_de_acucar.png'),
-        'TENDA': require('~/assets/tenda.png')
+        'SPANI': require('~/assets/spani.svg'),
+        'CARREFOUR': require('~/assets/carrefour.svg'),
+        'PAO_DE_ACUCAR': require('~/assets/pao_de_acucar.svg'),
+        'TENDA': require('~/assets/tenda.svg')
       },
       loading: false,
       buscaVazia: false
     }
   },
   computed: {
+    mobile () {
+      return this.$vuetify.breakpoint.mobile
+    }
   },
   watch: {
     term (value) {
@@ -146,5 +183,21 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
+.scroll {
+  background-color: #fed9ff;
+  width: 600px;
+  height: 150px;
+  overflow-y: hidden;
+  overflow-x: auto;
+  text-align: center;
+  padding: 20px;
+  white-space: nowrap;
+}
+/* só tá aplicando a primeira prop */
+span {
+  white-space: nowrap;
+  overflow: hidden;              /* "overflow" value must be different from "visible" */
+  text-overflow: ellipsis;
+}
 </style>
