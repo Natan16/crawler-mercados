@@ -24,6 +24,7 @@
     >
       <v-container v-if="mobile">
         <div v-if="produtos[idx].produto_crawl.length >= 0" class="text-center">{{produto.nome}}</div>
+        <!-- TODO: mostrar quantos mercados tem ao todo -->
         <v-slide-group
           selected-class="bg-success"
         >
@@ -32,13 +33,11 @@
             v-for="(item, idxItem) in produtos[idx].produto_crawl"
             :key="idxItem"
           >
-            <v-card class="ma-1" width="150px">
-              <v-card-text width="150px" height="100px" class="text-center">
+            <v-card class="ma-1" width="35vw">
+              <v-card-text class="text-center">
                 <div class="text-truncate bg-secondary">
-                  <!-- podia ser um short name aqui -->
-                  <!-- o tamanho da fonte também não ajuda -->
                   <span>{{item.mercado.unidade}}</span>
-                  <v-img height="30px" width="100px" contain :src="getLogo(item.mercado.rede)" />
+                  <v-img height="30px" width="100%" contain :src="getLogo(item.mercado.rede)" />
                 </div>
                 <div class="text-h6"><strong>R$ {{ item.preco }}</strong></div>
               </v-card-text>
