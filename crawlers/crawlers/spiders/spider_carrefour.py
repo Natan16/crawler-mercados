@@ -4,7 +4,19 @@ from functools import partial
 import scrapy
 from crawlers.items import CarrefourItem
 from crawlers.spiders import BaseSpider
-# from scrapy.shell import inspect_response
+from dataclasses import dataclass
+from typing import List
+# from decimal import Decimal
+from scrapy.shell import inspect_response
+
+@dataclass
+class CarrefourProduct():
+    id: int
+    nome: str
+    departamento: str
+    unidades: float
+    preco: str
+
 
 
 header = {
@@ -54,27 +66,53 @@ class CarrefourSpider(BaseSpider):
     def parse(self, response, departamento):
         parsed_response = json.loads(response.text)["data"]["search"]["products"]
         edges = parsed_response["edges"]
+        skus = []
+        products = []
         for edge in edges:
             node = edge["node"]
-            codigo_de_barras = node["gtin"]
+            _id = node["id"]
             preco = node["offers"]["lowPrice"] or node["offers"]["offers"][0]["price"]
             indiponivel = node["offers"]["offers"][0]["availability"] == "https://schema.org/OutOfStock"
             if not preco or indiponivel:
                 continue
-            yield CarrefourItem(
-                item = codigo_de_barras,
+            products.append(CarrefourProduct(
+                id = _id,
                 nome = node["name"],
-                categoria = None,
                 departamento = departamento,
                 unidades = node["unitMultiplier"],
                 preco = preco
+            ))
+            skus.append(f"skuId:{node['sku']}")
+        parse_ean_products = partial(self.parse_ean, products=products)
+        # no máximo 50!!!
+        url = "https://mercado.carrefour.com.br/api/vtex/api/catalog_system/pub/products/search?fq={skus}&_from=1&_to=50".format(skus=",".join(skus))
+        yield scrapy.Request(url, callback=parse_ean_products, headers=header)
+
+    def parse_ean(self, response, products: List[CarrefourProduct]):
+        # inspect_response(response, self)
+        parsed_response = json.loads(response.text)
+        id_ean_map = {}
+        for product in parsed_response:
+            prod_id = product["productId"]
+            prod_ean = product["items"][0]["ean"]
+            id_ean_map[prod_id] = prod_ean
+        for product in products:
+            if not id_ean_map.get(product.id):
+                continue
+            yield CarrefourItem(
+                item = id_ean_map[product.id],
+                nome = product.nome,
+                categoria = None,
+                departamento = product.departamento,
+                unidades = product.unidades,
+                preco = product.preco
             )
 
     def parse_first(self, response, departamento):
         parsed_response = json.loads(response.text)["data"]["search"]["products"]
         total_count = parsed_response["pageInfo"]["totalCount"]
         url = "https://mercado.carrefour.com.br/api/graphql?operationName=ProductsQuery&variables=%7B%22first%22%3A{first}%2C%22after%22%3A%22{after}%22%2C%22sort%22%3A%22score_desc%22%2C%22term%22%3A%22%22%2C%22selectedFacets%22%3A%5B%7B%22key%22%3A%22c%22%2C%22value%22%3A%22{departamento}%22%7D%2C%7B%22key%22%3A%22region-id%22%2C%22value%22%3A%22v2.6239EBF4FEF59E866802C479EC638A19%22%7D%2C%7B%22key%22%3A%22channel%22%2C%22value%22%3A%22%7B%5C%22salesChannel%5C%22%3A%5C%222%5C%22%2C%5C%22regionId%5C%22%3A%5C%22v2.6239EBF4FEF59E866802C479EC638A19%5C%22%7D%22%7D%2C%7B%22key%22%3A%22locale%22%2C%22value%22%3A%22pt-BR%22%7D%5D%7D"
-        chunk_size=100
+        chunk_size=50
         for after in range(0, total_count, chunk_size):
             parse_dep = partial(self.parse, departamento=departamento)
             yield scrapy.Request(url.format(first=chunk_size, after=after, departamento=departamento), callback=parse_dep, headers=header)
