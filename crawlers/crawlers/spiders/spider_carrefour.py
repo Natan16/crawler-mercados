@@ -11,7 +11,7 @@ from scrapy.shell import inspect_response
 
 @dataclass
 class CarrefourProduct():
-    id: int
+    sku: int
     nome: str
     departamento: str
     unidades: float
@@ -52,7 +52,7 @@ class CarrefourSpider(BaseSpider):
 
     def start_requests(self):
         chunk_size = 40
-        departamentos = ["mercearia", "drogaria", "bebidas", 
+        departamentos = ["mercearia", "drogaria", "bebidas",
                          "acougue-e-peixaria", "frios-e-laticinios",
                          "padaria-e-matinais", "congelados", "hortifruti",
                          "bebe-e-infantil", "limpeza-e-lavanderia",
@@ -66,17 +66,18 @@ class CarrefourSpider(BaseSpider):
     def parse(self, response, departamento):
         parsed_response = json.loads(response.text)["data"]["search"]["products"]
         edges = parsed_response["edges"]
+        # inspect_response(response, self)
         skus = []
         products = []
         for edge in edges:
             node = edge["node"]
-            _id = node["id"]
+            sku = node["sku"]
             preco = node["offers"]["lowPrice"] or node["offers"]["offers"][0]["price"]
             indiponivel = node["offers"]["offers"][0]["availability"] == "https://schema.org/OutOfStock"
             if not preco or indiponivel:
                 continue
             products.append(CarrefourProduct(
-                id = _id,
+                sku = sku,
                 nome = node["name"],
                 departamento = departamento,
                 unidades = node["unitMultiplier"],
@@ -91,16 +92,16 @@ class CarrefourSpider(BaseSpider):
     def parse_ean(self, response, products: List[CarrefourProduct]):
         # inspect_response(response, self)
         parsed_response = json.loads(response.text)
-        id_ean_map = {}
+        name_ean_map = {}
         for product in parsed_response:
-            prod_id = product["productId"]
+            prod_name = product["productName"]
             prod_ean = product["items"][0]["ean"]
-            id_ean_map[prod_id] = prod_ean
+            name_ean_map[prod_name] = prod_ean
         for product in products:
-            if not id_ean_map.get(product.id):
+            if not name_ean_map.get(product.nome):
                 continue
             yield CarrefourItem(
-                item = id_ean_map[product.id],
+                item = name_ean_map[product.nome],
                 nome = product.nome,
                 categoria = None,
                 departamento = product.departamento,
