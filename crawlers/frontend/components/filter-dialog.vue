@@ -6,7 +6,7 @@
         <v-container>
           <div class="mb-10">distância máxima (em km):</div>
           <v-slider
-            v-model="distancia"
+            v-model="raio"
             max="30"
             min="0"
             thumb-label="always"
@@ -21,7 +21,7 @@
             dense
             clearable
             :items="['shibata','spani', 'carrefour', 'pao de acucar', 'tenda']"
-            v-model="mymodel"
+            v-model="redes"
           >
             <template v-slot:selection="{ item, index }">
               <v-chip v-if="index < 5">
@@ -47,19 +47,18 @@
 
 <script>
 
-// import api from '~api'
+import { mapState } from 'vuex'
+import api from '~api'
 
 export default {
   data () {
     return {
       visible: false,
-      loading: false,
-      username: '',
-      password: '',
-      error: false,
-      distancia: 10,
-      mymodel: null
+      loading: false
     }
+  },
+  computed: {
+    ...mapState(['raio', 'redes'])
   },
   methods: {
     open () {
@@ -68,17 +67,14 @@ export default {
     close () {
       this.visible = false
     },
-    aplicar () {
+    async aplicar () {
       this.loading = true
-      this.error = false
-      // const user = await api.login(this.username, this.password)
-      // this.$store.commit('auth/setCurrentUser', user)
-      // tem que salvar essa distancia numa store ( pode chamar filter store )
-      // bem como os mercados aceitos
+      const geolocation = this.$store.getters.getGeolation
+      const mercadosProximos = await api.get_mercados_proximos({...geolocation, 'raio': this.raio, 'redes': this.redes})
+      this.$store.commit('geolocation/setMercadosProximos', mercadosProximos)
+      this.$store.commit('geolocation/setRaio', this.raio)
+      this.$store.commit('geolocation/setRedes', this.redes)
       this.visible = false
-      // } else {
-      // this.error = true
-      // }
       this.loading = false
     }
   }

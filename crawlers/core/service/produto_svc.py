@@ -19,9 +19,8 @@ def _sort_produto(produto, words):
     return preco_medio
 
 
-def produtos(search_term):
+def produtos(search_term, mercados_proximos):
     words = search_term.split()
-
     # tem que ter um pré-processamento das palavras
     # ... do que vai consistir isso?
     # identificar o que é quantidade e padronizar 1.5l 1,5l 1,5 l e 1.5 l tem que ser tudo equivalente
@@ -36,6 +35,8 @@ def produtos(search_term):
     ).order_by("-created_at")
     mercado_crawl_map = {}
     for crawl in crawl_qs:
+        if mercados_proximos is not None and crawl.mercado.pk not in mercados_proximos:
+            continue 
         if crawl.mercado.pk in mercado_crawl_map:
            continue
         mercado_crawl_map[crawl.mercado.pk] = crawl
