@@ -83,6 +83,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import debounce from 'lodash/debounce'
 import Vue from 'vue'
 import api from '~api'
@@ -109,6 +110,11 @@ export default {
     }
   },
   computed: {
+    ...mapGetters({
+      redes: 'geolocation/getRedes',
+      raio: 'geolocation/getRaio',
+      mercadosProximos: 'geolocation/getMercadosProximos'
+    }),
     mobile () {
       return this.$vuetify.breakpoint.mobile
     }
@@ -122,9 +128,23 @@ export default {
       }
     }
   },
+  mounted () {
+    if (!this.$store.state.geolocation.geolocation) {
+      navigator.geolocation.getCurrentPosition(position => {
+        this.saveLocation(position.coords.latitude, position.coords.longitude)
+      })
+    }
+  },
   methods: {
+    async saveLocation (latitude, longitude) {
+      this.$store.commit('geolocation/setGeolocation', {latitude, longitude})
+      const raio = this.raio
+      const redes = this.redes
+      const mercadosProximos = await api.get_mercados_proximos({latitude, longitude, raio, redes})
+      this.$store.commit('geolocation/setMercadosProximos', mercadosProximos)
+    },
     searchProduto: debounce(async function (term) {
-      const response = await api.search_produto(term)
+      const response = await api.search_produto(term, this.mercadosProximos)
       this.produtos = response
       this.loading = false
       if (this.produtos.length === 0 || !this.produtos.some((produto) => produto.produto_crawl.length > 0)) {

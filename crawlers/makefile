@@ -37,6 +37,7 @@ push: retag get-login
 
 # crawlear
 crawl:
+	scrapy crawl tenda
 	scrapy crawl spani
 	scrapy crawl shibata
 	scrapy crawl carrefour

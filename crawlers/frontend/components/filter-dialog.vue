@@ -6,7 +6,7 @@
         <v-container>
           <div class="mb-10">distância máxima (em km):</div>
           <v-slider
-            v-model="distancia"
+            v-model="raio"
             max="30"
             min="0"
             thumb-label="always"
@@ -20,8 +20,8 @@
             chips
             dense
             clearable
-            :items="['shibata','spani', 'carrefour', 'pao de acucar', 'tenda']"
-            v-model="mymodel"
+            :items="['SHIBATA','SPANI', 'CARREFOUR', 'PAO_DE_ACUCAR', 'TENDA']"
+            v-model="redes"
           >
             <template v-slot:selection="{ item, index }">
               <v-chip v-if="index < 5">
@@ -47,19 +47,22 @@
 
 <script>
 
-// import api from '~api'
+import { mapGetters } from 'vuex'
+import api from '~api'
 
 export default {
   data () {
     return {
       visible: false,
       loading: false,
-      username: '',
-      password: '',
-      error: false,
-      distancia: 10,
-      mymodel: null
+      redes: [],
+      raio: 10
     }
+  },
+  computed: {
+    ...mapGetters({
+      geolocation: 'geolocation/getGeolocation'
+    })
   },
   methods: {
     open () {
@@ -68,17 +71,15 @@ export default {
     close () {
       this.visible = false
     },
-    aplicar () {
+    async aplicar () {
       this.loading = true
-      this.error = false
-      // const user = await api.login(this.username, this.password)
-      // this.$store.commit('auth/setCurrentUser', user)
-      // tem que salvar essa distancia numa store ( pode chamar filter store )
-      // bem como os mercados aceitos
+      const geo = this.geolocation
+      // a longitude tá undefined, o que não faz sentido ... tem que ser 1 state pra cada
+      const mercadosProximos = await api.get_mercados_proximos({'latitude': geo.latitude, 'longitude': geo.longitude, 'raio': this.raio, 'redes': this.redes})
+      this.$store.commit('geolocation/setMercadosProximos', mercadosProximos)
+      this.$store.commit('geolocation/setRaio', this.raio)
+      this.$store.commit('geolocation/setRedes', this.redes)
       this.visible = false
-      // } else {
-      // this.error = true
-      // }
       this.loading = false
     }
   }
