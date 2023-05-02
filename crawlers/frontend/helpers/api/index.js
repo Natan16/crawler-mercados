@@ -19,7 +19,11 @@ export default {
   add_todo (newtask) {
     return post('/api/add_todo', {new_task: newtask})
   },
-  search_produto (term) {
-    return get('/api/search', {'search_term': term})
+  search_produto (term, mercadosProximos) {
+    return get('/api/search', {'search_term': term, 'mercados_proximos': JSON.stringify(mercadosProximos)})
+  },
+  get_mercados_proximos (params) {
+    return get('/api/get_mercados_proximos', {params})
   }
+
 }

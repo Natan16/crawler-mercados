@@ -2,12 +2,14 @@ from core.service.produto_svc import produtos
 from core.service.mercado_svc import mercados_proximos
 from core.forms import MercadosProximosForm
 from django.http import JsonResponse
+import json
 
 
 def search_produtos(request):
     search_term = request.GET.get("search_term")
+    mercados_proximos = json.loads(request.GET.get("mercados_proximos"))
     limit = 50
-    produto_qs = produtos(search_term)
+    produto_qs = produtos(search_term, mercados_proximos)
     response = []
     for prod in produto_qs[:limit]:
         serialized_produto = {
@@ -34,12 +36,12 @@ def search_produtos(request):
 
 def get_mercados_proximos(request):
     form = MercadosProximosForm.parse_raw(request.GET.get("params"))
-    mercados_e_distancias = mercados_proximos(form.latitude, form.longitude, form.raio_em_km)
+    mercados_e_distancias = mercados_proximos(form.latitude, form.longitude, form.raio, form.redes)
     response = []
     for mercado, distancia in mercados_e_distancias:
-        serialized_mercado = mercado.to_dict_json()
-        serialized_mercado.update({"distancia": distancia})
-        response.append(serialized_mercado)
+        # serialized_mercado = mercado.to_dict_json()
+        # serialized_mercado.update({"distancia": distancia})
+        response.append(mercado.pk)
     return JsonResponse(response, safe=False)
 
 
