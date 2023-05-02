@@ -1,13 +1,16 @@
 export const state = () => ({
   geolocation: undefined,
+  latitude: undefined,
+  longitude: undefined,
   raio: 10,
   redes: null,
   mercadosProximos: undefined
 })
 
 export const mutations = {
-  setGeolocation (state, latitude, longitude) {
-    state.geolocation = {latitude, longitude}
+  setGeolocation (state, geolocation) {
+    state.latitude = geolocation.latitude
+    state.longitude = geolocation.longitude
   },
   setMercadosProximos (state, mercadosProximos) {
     state.mercadosProximos = mercadosProximos
@@ -21,8 +24,8 @@ export const mutations = {
 }
 
 export const getters = {
-  getGeolation (state) {
-    return state.geolocation
+  getGeolocation (state) {
+    return {'latitude': state.latitude, 'longitude': state.longitude}
   },
   getMercadosProximos (state) {
     return state.mercadosProximos

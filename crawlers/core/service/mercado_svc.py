@@ -20,8 +20,8 @@ def mercados_proximos(latitude: float, longitude: float, radius_in_km=10, redes=
     mercados = []
     coordenadas = Coords(latitude=latitude, longitude=longitude)
     for mercado in mercado_qs:
-        dist = distancia(mercado.coordenadas, coordenadas)
-        if dist > radius_in_km:
+        dist_in_m = distancia(mercado.coordenadas, coordenadas)
+        if dist_in_m / 1_000 > radius_in_km:
             continue
-        mercados.append((mercado, distancia))
+        mercados.append((mercado, dist_in_m))
     return sorted(mercados, key=lambda m: m[1])

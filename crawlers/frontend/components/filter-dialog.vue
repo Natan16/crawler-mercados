@@ -20,7 +20,7 @@
             chips
             dense
             clearable
-            :items="['shibata','spani', 'carrefour', 'pao de acucar', 'tenda']"
+            :items="['SHIBATA','SPANI', 'CARREFOUR', 'PAO_DE_ACUCAR', 'TENDA']"
             v-model="redes"
           >
             <template v-slot:selection="{ item, index }">
@@ -47,18 +47,22 @@
 
 <script>
 
-import { mapState } from 'vuex'
+import { mapGetters } from 'vuex'
 import api from '~api'
 
 export default {
   data () {
     return {
       visible: false,
-      loading: false
+      loading: false,
+      redes: [],
+      raio: 10
     }
   },
   computed: {
-    ...mapState(['raio', 'redes'])
+    ...mapGetters({
+      geolocation: 'geolocation/getGeolocation'
+    })
   },
   methods: {
     open () {
@@ -69,8 +73,9 @@ export default {
     },
     async aplicar () {
       this.loading = true
-      const geolocation = this.$store.getters.getGeolation
-      const mercadosProximos = await api.get_mercados_proximos({...geolocation, 'raio': this.raio, 'redes': this.redes})
+      const geo = this.geolocation
+      // a longitude tá undefined, o que não faz sentido ... tem que ser 1 state pra cada
+      const mercadosProximos = await api.get_mercados_proximos({'latitude': geo.latitude, 'longitude': geo.longitude, 'raio': this.raio, 'redes': this.redes})
       this.$store.commit('geolocation/setMercadosProximos', mercadosProximos)
       this.$store.commit('geolocation/setRaio', this.raio)
       this.$store.commit('geolocation/setRedes', this.redes)
