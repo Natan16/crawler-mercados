@@ -15,7 +15,7 @@ export default {
     title: process.env.npm_package_name || '',
     script: [
       {
-        src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1271835845256982',
+        src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9706986021109652',
         crossorigin: 'anonymous',
         async: true
       }
