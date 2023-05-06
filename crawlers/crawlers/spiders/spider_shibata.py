@@ -46,15 +46,15 @@ class ShibataSpider(BaseSpider):
     def parse(self, response, departamento, categoria):
         jsonresponse = json.loads(response.text)["data"]
         for produto in jsonresponse:
-            codigo_de_barras = produto["produto"]["complemento"]["codigo_barras"]
+            codigo_de_barras = produto["codigo_barras"]
             yield VipCommerceItem(
                 item=codigo_de_barras,
                 nome=produto["descricao"],
                 categoria=categoria,
                 departamento=departamento,
-                peso_bruto=D(produto["produto"]["peso_bruto"]) or None,
-                peso_liquido=D(produto["produto"]["peso_liquido"]) or None,
-                unidades = produto["produto"]["quantidade_unidade_diferente"],
+                peso_bruto=None,
+                peso_liquido=None,
+                unidades = produto["quantidade_unidade_diferente"],
                 preco = produto["preco"]
             )
 
