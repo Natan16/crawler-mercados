@@ -7,7 +7,7 @@ import json
 
 def search_produtos(request):
     search_term = request.GET.get("search_term")
-    mercados_proximos = json.loads(request.GET.get("mercados_proximos"))
+    mercados_proximos = json.loads(request.GET.get("mercados_proximos", "[]"))
     limit = 50
     produto_qs = produtos(search_term, mercados_proximos)
     response = []
