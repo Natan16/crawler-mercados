@@ -35,7 +35,7 @@ def produtos(search_term, mercados_proximos):
     ).order_by("-created_at")
     mercado_crawl_map = {}
     for crawl in crawl_qs:
-        if mercados_proximos is not None and crawl.mercado.pk not in mercados_proximos:
+        if mercados_proximos and crawl.mercado.pk not in mercados_proximos:
             continue 
         if crawl.mercado.pk in mercado_crawl_map:
            continue
