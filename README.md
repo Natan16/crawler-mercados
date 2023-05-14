@@ -1,5 +1,7 @@
 # crawler-mercados
-Crawleia os principais supermercados de São José dos Campos pra saber onde os preços estão mais baixos
+Crawleia os principais supermercados de São José dos Campos pra saber onde os preços estão mais baixos.
+Permite montar listas de compras.
+https://mercadosimplificado.com/
 
 
 # Subir a aplicação
