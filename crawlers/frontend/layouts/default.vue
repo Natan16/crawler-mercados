@@ -9,12 +9,12 @@
     </v-main>
     <le-footer />
     <v-snackbar
-      :timeout="snack.timeout"
-      :color="snack.color"
+      :timeout="timeout"
+      :color="color"
       bottom
-      v-model="snack.visible"
+      v-model="show"
     >
-      {{snack.text}}
+      {{message}}
       <!-- <v-btn dark text @click.native="closeSnack">Close</v-btn> -->
     </v-snackbar>
   </v-app>
@@ -33,17 +33,21 @@ export default {
   data: () => ({
     layout: {
       drawer: true
-    }
+    },
+    show: false,
+    message: '',
+    color: '',
+    timeout: 2000
   }),
-  computed: {
-    snack () {
-      return JSON.parse(JSON.stringify(this.$store.state.snack.snack))
-    }
-  },
-  methods: {
-    // closeSnack () {
-    //   this.$store.commit('snack/hide')
-    // }
+  created () {
+    this.$store.subscribe((mutation, state) => {
+      if (mutation.type === 'snack/set') {
+        this.message = state.snack.snack.text
+        this.color = state.snack.snack.color
+        this.timeout = state.snack.snack.timeout
+        this.show = true
+      }
+    })
   }
 }
 </script>
