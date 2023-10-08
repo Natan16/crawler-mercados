@@ -12,9 +12,10 @@ class Command(BaseCommand):
             uf = "SP",
             bairro = "Jardim Oriente",
             unidade = "Shibata - Jardim Oriente",
-            filial = 1
+            filial = 1,
+            latitude = -23.237265,
+            longitude = -45.896721
         )
-        # lat -23.237265, long = -45.896721
 
         Mercado.objects.get_or_create(
             rede = "SPANI",
@@ -22,9 +23,10 @@ class Command(BaseCommand):
             uf = "SP",
             bairro = "Aquarius",
             unidade = "Spani - Aquarius",
-            filial = 1
+            filial = 1,
+            latitude = -23.225743,
+            longitude = -45.910693
         )
-        # lat -23.225743, long = -45.910693
 
         Mercado.objects.get_or_create(
             rede = "CARREFOUR",
@@ -32,9 +34,10 @@ class Command(BaseCommand):
             uf = "SP",
             bairro = "Jardim Serimbura",
             unidade = "Carrefour - Jardim Serimbura",
-            filial = 1
+            filial = 1,
+            latitude = -23.222826,
+            longitude = -45.905961
         )
-        # lat -23.222826, long = -45.905961
 
         Mercado.objects.get_or_create(
             rede = "PAO_DE_ACUCAR",
@@ -42,9 +45,10 @@ class Command(BaseCommand):
             uf = "SP",
             bairro = "Aquarius",
             unidade = "Pão de Açúcar - Aquarius",
-            filial = 461
+            filial = 461,
+            latitude = -23.219339,
+            longitude = -45.905450
         )
-        # lat -23.219339, long = -45.905450
 
         Mercado.objects.get_or_create(
             rede = "TENDA",
