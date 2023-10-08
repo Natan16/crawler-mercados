@@ -126,7 +126,7 @@ export default {
     mercadosProximos (value) {
       this.searchProduto(this.term)
       if (value.length === 0) {
-        Snacks.show(this.$store, {text: 'Nenhum mercado próximo encontrado, mostrando resultados para todos os mercados', timeout: 6000})
+        Snacks.show(this.$store, {text: 'Nenhum mercado próximo encontrado, mostrando todos os resultados', timeout: 6000, color: 'warning'})
       }
     }
   },
