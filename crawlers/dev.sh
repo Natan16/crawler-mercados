@@ -100,7 +100,7 @@ function dknpminstall {
 function dkpgnginx {
     CD=$(pwd)
     cd $PROJ_BASE
-    docker-compose -f docker/compose/pgnginx.yaml up
+    docker compose -f docker/compose/pgnginx.yaml up
     exitcode=$?
     cd $CD
     return $exitcode
@@ -109,7 +109,7 @@ function dkpgnginx {
 function dkup {
     CD=$(pwd)
     cd $PROJ_BASE
-    docker-compose -f docker/compose/dev.yaml up
+    docker compose -f docker/compose/dev.yaml up
     exitcode=$?
     cd $CD
     return $exitcode
