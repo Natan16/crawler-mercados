@@ -19,26 +19,26 @@ source dev.sh
 dkpgnginx
 <!-- num outro terminal -->
 poetry shell
-./manage.py runserver <!-- na primeira execução é necessário rodar as migrações com ./manage.py migrate -->   
+./manage.py runserver <!-- na primeira execução é necessário rodar as migrações com ./manage.py migrate e rodar o comando de criar mercados -->   
 ```
 ### frontend
 ```
-<!-- é preciso de o npm e o nvm instalados -->
+# é preciso de o npm e o nvm instalados
 cd frontend
-<!-- pra usar o versão certa do node -->
-nvm use 
-<!-- instala as dependências -->
+# pra usar o versão certa do node
+nvm use 14
+# instala as dependências
 npm i
- <!-- roda o frontend -->
+ # roda o frontend
  API_MOCK=0 npm run dev
 ```
 
 
 # Rodar os crawlers
+Antes de rodar os crawlers é preciso primeiro criar os mecados com 
 ```
-<!-- antes de rodar os crawlers é preciso primeiro criar os mecados com ./manage.py criar_mercados -->
-scrapy crawl <nome_do_crawler>
-p.ex: scrapy crawl spani
+ ./manage.py criar_mercados
+scrapy crawl <nome_do_crawler> # p.ex: scrapy crawl spani
 ```
 
 # Deploy
