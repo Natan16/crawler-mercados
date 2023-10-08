@@ -74,7 +74,6 @@ export default {
     async aplicar () {
       this.loading = true
       const geo = this.geolocation
-      // a longitude tá undefined, o que não faz sentido ... tem que ser 1 state pra cada
       const mercadosProximos = await api.get_mercados_proximos({'latitude': geo.latitude, 'longitude': geo.longitude, 'raio': this.raio, 'redes': this.redes})
       this.$store.commit('geolocation/setMercadosProximos', mercadosProximos)
       this.$store.commit('geolocation/setRaio', this.raio)

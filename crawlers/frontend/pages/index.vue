@@ -97,7 +97,7 @@ export default {
   data () {
     return {
       produtos: [],
-      term: null,
+      term: '',
       logoMap: {
         'SHIBATA': require('~/assets/shibata.svg'),
         'SPANI': require('~/assets/spani.svg'),
@@ -121,10 +121,12 @@ export default {
   },
   watch: {
     term (value) {
-      this.buscaVazia = false
-      if (value?.length >= 3) {
-        this.loading = true
-        this.searchProduto(value)
+      this.searchProduto(value)
+    },
+    mercadosProximos (value) {
+      this.searchProduto(this.term)
+      if (value.length === 0) {
+        Snacks.show(this.$store, {text: 'Nenhum mercado próximo encontrado, mostrando resultados para todos os mercados', timeout: 6000})
       }
     }
   },
@@ -144,6 +146,11 @@ export default {
       this.$store.commit('geolocation/setMercadosProximos', mercadosProximos)
     },
     searchProduto: debounce(async function (term) {
+      if (term.length < 3) {
+        return
+      }
+      this.buscaVazia = false
+      this.loading = true
       const response = await api.search_produto(term, this.mercadosProximos)
       this.produtos = response
       this.loading = false
