@@ -4,9 +4,9 @@ from functools import partial
 
 import scrapy
 from scrapy.shell import inspect_response
-from crawlers.spiders import BaseSpider
 
 from crawlers.items import VipCommerceItem
+from crawlers.spiders import BaseSpider
 
 header = {
     "Accept": "application/json",
@@ -24,24 +24,22 @@ header = {
 class ShibataSpider(BaseSpider):
     name = "shibata"
 
-    custom_settings = {
-        'ITEM_PIPELINES': {
-            'crawlers.pipelines.VipCommercePipeline': 300
-        }
-    }
+    custom_settings = {"ITEM_PIPELINES": {"crawlers.pipelines.VipCommercePipeline": 300}}
 
     def __init__(self, filial=1, centro_distribuicao=13):
         # não tem como pegar o centro de distribuição de algum canto?
         self.centro_distribuicao = centro_distribuicao
         super().__init__("SHIBATA", filial)
 
-    
     def start_requests(self):
         centro_distribuicao = self.centro_distribuicao
         filial = self.filial
         url = "https://api.loja.shibata.com.br/v1/loja/classificacoes_mercadologicas/departamentos/arvore/filial/{filial}/centro_distribuicao/{centro_distribuicao}"
-        yield scrapy.Request(url.format(filial=filial, centro_distribuicao=centro_distribuicao), callback=self.parse_categorias, headers=header)
-
+        yield scrapy.Request(
+            url.format(filial=filial, centro_distribuicao=centro_distribuicao),
+            callback=self.parse_categorias,
+            headers=header,
+        )
 
     def parse(self, response, departamento, categoria):
         jsonresponse = json.loads(response.text)["data"]
@@ -54,8 +52,8 @@ class ShibataSpider(BaseSpider):
                 departamento=departamento,
                 peso_bruto=None,
                 peso_liquido=None,
-                unidades = produto["quantidade_unidade_diferente"],
-                preco = produto["preco"]
+                unidades=produto["quantidade_unidade_diferente"],
+                preco=produto["preco"],
             )
 
     def parse_categorias(self, response):
@@ -65,4 +63,8 @@ class ShibataSpider(BaseSpider):
                 parse_categoria = partial(self.parse, departamento=dep["descricao"], categoria=cat["descricao"])
                 secao = cat["classificacao_mercadologica_id"]
                 url = "https://api.loja.shibata.com.br/v1/loja/classificacoes_mercadologicas/secoes/{secao}/produtos/filial/{filial}/centro_distribuicao/{centro_distribuicao}/ativos?orderby=produto.descricao:asc"
-                yield scrapy.Request(url.format(secao=secao, filial=self.filial, centro_distribuicao=self.centro_distribuicao), callback=parse_categoria, headers=header)
+                yield scrapy.Request(
+                    url.format(secao=secao, filial=self.filial, centro_distribuicao=self.centro_distribuicao),
+                    callback=parse_categoria,
+                    headers=header,
+                )

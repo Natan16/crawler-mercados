@@ -1,22 +1,24 @@
 import json
+from dataclasses import dataclass
 from functools import partial
+from typing import List
 
 import scrapy
-from crawlers.items import CarrefourItem
-from crawlers.spiders import BaseSpider
-from dataclasses import dataclass
-from typing import List
+
 # from decimal import Decimal
 from scrapy.shell import inspect_response
 
+from crawlers.items import CarrefourItem
+from crawlers.spiders import BaseSpider
+
+
 @dataclass
-class CarrefourProduct():
+class CarrefourProduct:
     sku: int
     nome: str
     departamento: str
     unidades: float
     preco: str
-
 
 
 header = {
@@ -34,34 +36,41 @@ header = {
     "sec-fetch-dest": "empty",
     "sec-fetch-mode": "cors",
     "sec-fetch-site": "same-origin",
-    "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"
+    "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
 }
 
 
 class CarrefourSpider(BaseSpider):
     name = "carrefour"
-    
-    custom_settings = {
-        'ITEM_PIPELINES': {
-            'crawlers.pipelines.CarrefourPipeline': 300
-        }
-    }
+
+    custom_settings = {"ITEM_PIPELINES": {"crawlers.pipelines.CarrefourPipeline": 300}}
 
     def __init__(self, filial=1):
         super().__init__("CARREFOUR", filial)
 
     def start_requests(self):
         chunk_size = 40
-        departamentos = ["mercearia", "drogaria", "bebidas",
-                         "acougue-e-peixaria", "frios-e-laticinios",
-                         "padaria-e-matinais", "congelados", "hortifruti",
-                         "bebe-e-infantil", "limpeza-e-lavanderia",
-                         "higiene-e-perfumaria", "utilidades-domesticas",
-                         "pet-care"]
+        departamentos = [
+            "mercearia",
+            "drogaria",
+            "bebidas",
+            "acougue-e-peixaria",
+            "frios-e-laticinios",
+            "padaria-e-matinais",
+            "congelados",
+            "hortifruti",
+            "bebe-e-infantil",
+            "limpeza-e-lavanderia",
+            "higiene-e-perfumaria",
+            "utilidades-domesticas",
+            "pet-care",
+        ]
         for departamento in departamentos:
             url = "https://mercado.carrefour.com.br/api/graphql?operationName=ProductsQuery&variables=%7B%22first%22%3A{first}%2C%22after%22%3A%220%22%2C%22sort%22%3A%22score_desc%22%2C%22term%22%3A%22%22%2C%22selectedFacets%22%3A%5B%7B%22key%22%3A%22c%22%2C%22value%22%3A%22{departamento}%22%7D%2C%7B%22key%22%3A%22region-id%22%2C%22value%22%3A%22v2.6239EBF4FEF59E866802C479EC638A19%22%7D%2C%7B%22key%22%3A%22channel%22%2C%22value%22%3A%22%7B%5C%22salesChannel%5C%22%3A%5C%222%5C%22%2C%5C%22regionId%5C%22%3A%5C%22v2.6239EBF4FEF59E866802C479EC638A19%5C%22%7D%22%7D%2C%7B%22key%22%3A%22locale%22%2C%22value%22%3A%22pt-BR%22%7D%5D%7D"
             parse_first_dep = partial(self.parse_first, departamento=departamento)
-            yield scrapy.Request(url.format(first=chunk_size, departamento=departamento), callback=parse_first_dep, headers=header)
+            yield scrapy.Request(
+                url.format(first=chunk_size, departamento=departamento), callback=parse_first_dep, headers=header
+            )
 
     def parse(self, response, departamento):
         parsed_response = json.loads(response.text)["data"]["search"]["products"]
@@ -76,17 +85,17 @@ class CarrefourSpider(BaseSpider):
             indiponivel = node["offers"]["offers"][0]["availability"] == "https://schema.org/OutOfStock"
             if not preco or indiponivel:
                 continue
-            products.append(CarrefourProduct(
-                sku = sku,
-                nome = node["name"],
-                departamento = departamento,
-                unidades = node["unitMultiplier"],
-                preco = preco
-            ))
+            products.append(
+                CarrefourProduct(
+                    sku=sku, nome=node["name"], departamento=departamento, unidades=node["unitMultiplier"], preco=preco
+                )
+            )
             skus.append(f"skuId:{node['sku']}")
         parse_ean_products = partial(self.parse_ean, products=products)
         # no máximo 50!!!
-        url = "https://mercado.carrefour.com.br/api/vtex/api/catalog_system/pub/products/search?fq={skus}&_from=1&_to=50".format(skus=",".join(skus))
+        url = "https://mercado.carrefour.com.br/api/vtex/api/catalog_system/pub/products/search?fq={skus}&_from=1&_to=50".format(
+            skus=",".join(skus)
+        )
         yield scrapy.Request(url, callback=parse_ean_products, headers=header)
 
     def parse_ean(self, response, products: List[CarrefourProduct]):
@@ -101,20 +110,21 @@ class CarrefourSpider(BaseSpider):
             if not name_ean_map.get(product.nome):
                 continue
             yield CarrefourItem(
-                item = name_ean_map[product.nome],
-                nome = product.nome,
-                categoria = None,
-                departamento = product.departamento,
-                unidades = product.unidades,
-                preco = product.preco
+                item=name_ean_map[product.nome],
+                nome=product.nome,
+                categoria=None,
+                departamento=product.departamento,
+                unidades=product.unidades,
+                preco=product.preco,
             )
 
     def parse_first(self, response, departamento):
         parsed_response = json.loads(response.text)["data"]["search"]["products"]
         total_count = parsed_response["pageInfo"]["totalCount"]
         url = "https://mercado.carrefour.com.br/api/graphql?operationName=ProductsQuery&variables=%7B%22first%22%3A{first}%2C%22after%22%3A%22{after}%22%2C%22sort%22%3A%22score_desc%22%2C%22term%22%3A%22%22%2C%22selectedFacets%22%3A%5B%7B%22key%22%3A%22c%22%2C%22value%22%3A%22{departamento}%22%7D%2C%7B%22key%22%3A%22region-id%22%2C%22value%22%3A%22v2.6239EBF4FEF59E866802C479EC638A19%22%7D%2C%7B%22key%22%3A%22channel%22%2C%22value%22%3A%22%7B%5C%22salesChannel%5C%22%3A%5C%222%5C%22%2C%5C%22regionId%5C%22%3A%5C%22v2.6239EBF4FEF59E866802C479EC638A19%5C%22%7D%22%7D%2C%7B%22key%22%3A%22locale%22%2C%22value%22%3A%22pt-BR%22%7D%5D%7D"
-        chunk_size=50
+        chunk_size = 50
         for after in range(0, total_count, chunk_size):
             parse_dep = partial(self.parse, departamento=departamento)
-            yield scrapy.Request(url.format(first=chunk_size, after=after, departamento=departamento), callback=parse_dep, headers=header)
-
+            yield scrapy.Request(
+                url.format(first=chunk_size, after=after, departamento=departamento), callback=parse_dep, headers=header
+            )

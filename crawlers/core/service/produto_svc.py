@@ -1,14 +1,15 @@
 import operator
-from core.models import Produto, ProdutoCrawl, Crawl
 from datetime import datetime, timedelta
-from django.db.models import CharField, Q, Prefetch
-from django.db.models.functions import Lower
-from functools import reduce
-from numpy import mean
-from functools import partial
+from functools import partial, reduce
 
+from django.db.models import CharField, Prefetch, Q
+from django.db.models.functions import Lower
+from numpy import mean
+
+from core.models import Crawl, Produto, ProdutoCrawl
 
 CharField.register_lookup(Lower)
+
 
 def _sort_produto(produto, words):
     preco_medio = float(mean(list(produto.produtocrawl_set.all().values_list("preco", flat=True))))
@@ -30,24 +31,23 @@ def produtos(search_term, mercados_proximos):
 
     query = reduce(operator.and_, (Q(nome__lower__unaccent__icontains=word) for word in words))
     produto_qs = Produto.objects.filter(query)
-    crawl_qs = Crawl.objects.filter(
-        created_at__gte=datetime.now() - timedelta(days=7)
-    ).order_by("-created_at")
+    crawl_qs = Crawl.objects.filter(created_at__gte=datetime.now() - timedelta(days=7)).order_by("-created_at")
     mercado_crawl_map = {}
     for crawl in crawl_qs:
         if mercados_proximos and crawl.mercado.pk not in mercados_proximos:
-            continue 
+            continue
         if crawl.mercado.pk in mercado_crawl_map:
-           continue
+            continue
         mercado_crawl_map[crawl.mercado.pk] = crawl
 
     produto_qs = produto_qs.prefetch_related(
         Prefetch(
             lookup="produtocrawl_set",
-            queryset=ProdutoCrawl.objects.filter(
-                crawl__in=mercado_crawl_map.values()
-            ).select_related("produto", "crawl__mercado").order_by("preco"),
-            to_attr="produtocrawl_recente")
+            queryset=ProdutoCrawl.objects.filter(crawl__in=mercado_crawl_map.values())
+            .select_related("produto", "crawl__mercado")
+            .order_by("preco"),
+            to_attr="produtocrawl_recente",
+        )
     )
     sorted_produtos = sorted(produto_qs, key=partial(_sort_produto, words=words))
     return sorted_produtos

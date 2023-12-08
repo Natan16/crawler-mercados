@@ -1,38 +1,39 @@
-
 from django.db import models
 from django.db.models.fields import DecimalField
+
 from commons.geoutils import Coords
 
 UFS = [
-    ('AC', 'Acre'),
-    ('AL', 'Alagoas'),
-    ('AP', 'Amapá'),
-    ('AM', 'Amazonas'),
-    ('BA', 'Bahia'),
-    ('CE', 'Ceará'),
-    ('DF', 'Distrito Federal'),
-    ('ES', 'Espírito Santo'),
-    ('GO', 'Goiás'),
-    ('MA', 'Maranhão'),
-    ('MT', 'Mato Grosso'),
-    ('MS', 'Mato Grosso do Sul'),
-    ('MG', 'Minas Gerais'),
-    ('PA', 'Pará'),
-    ('PB', 'Paraíba'),
-    ('PR', 'Paraná'),
-    ('PE', 'Pernambuco'),
-    ('PI', 'Piauí'),
-    ('RJ', 'Rio de Janeiro'),
-    ('RN', 'Rio Grande do Norte'),
-    ('RS', 'Rio Grande do Sul'),
-    ('RO', 'Rondônia'),
-    ('RR', 'Roraima'),
-    ('SC', 'Santa Catarina'),
-    ('SP', 'São Paulo'),
-    ('SE', 'Sergipe'),
-    ('TO', 'Tocantins'),
-    ('EX', 'Exterior'),
+    ("AC", "Acre"),
+    ("AL", "Alagoas"),
+    ("AP", "Amapá"),
+    ("AM", "Amazonas"),
+    ("BA", "Bahia"),
+    ("CE", "Ceará"),
+    ("DF", "Distrito Federal"),
+    ("ES", "Espírito Santo"),
+    ("GO", "Goiás"),
+    ("MA", "Maranhão"),
+    ("MT", "Mato Grosso"),
+    ("MS", "Mato Grosso do Sul"),
+    ("MG", "Minas Gerais"),
+    ("PA", "Pará"),
+    ("PB", "Paraíba"),
+    ("PR", "Paraná"),
+    ("PE", "Pernambuco"),
+    ("PI", "Piauí"),
+    ("RJ", "Rio de Janeiro"),
+    ("RN", "Rio Grande do Norte"),
+    ("RS", "Rio Grande do Sul"),
+    ("RO", "Rondônia"),
+    ("RR", "Roraima"),
+    ("SC", "Santa Catarina"),
+    ("SP", "São Paulo"),
+    ("SE", "Sergipe"),
+    ("TO", "Tocantins"),
+    ("EX", "Exterior"),
 ]
+
 
 class Mercado(models.Model):
     rede = models.CharField(max_length=32)
@@ -48,6 +49,7 @@ class Mercado(models.Model):
     def coordenadas(self):
         return Coords(self.latitude, self.longitude)
 
+
 class Produto(models.Model):
     item = models.CharField(max_length=512, unique=True)
     nome = models.CharField(max_length=512, null=True, blank=True)
@@ -59,6 +61,8 @@ class Produto(models.Model):
     peso_liquido = DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     volume_ml = DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     unidades = models.IntegerField(default=1)
+
+
 # TODO: mesmo nome exato tem que ser mapeado como se fosse o mesmo produto
 # mas antes disso é bem mais importante ter mais informação ( outros mercados )
 # tem que tirar qos espaços entre o peso e sua unidade
@@ -68,6 +72,7 @@ class Produto(models.Model):
 class Crawl(models.Model):
     mercado = models.ForeignKey(Mercado, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now_add=True)
+
 
 class ProdutoCrawl(models.Model):
     produto = models.ForeignKey(Produto, on_delete=models.PROTECT)
@@ -79,7 +84,7 @@ class ProdutoCrawl(models.Model):
             "id": self.pk,
             "produto": {"nome": self.produto.nome, "id": self.produto.pk},
             "mercado": {"unidade": self.crawl.mercado.unidade, "rede": self.crawl.mercado.rede},
-            "preco": self.preco
+            "preco": self.preco,
         }
 
 

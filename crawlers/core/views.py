@@ -1,8 +1,10 @@
-from core.service.produto_svc import produtos
-from core.service.mercado_svc import mercados_proximos
-from core.forms import MercadosProximosForm
-from django.http import JsonResponse
 import json
+
+from django.http import JsonResponse
+
+from core.forms import MercadosProximosForm
+from core.service.mercado_svc import mercados_proximos
+from core.service.produto_svc import produtos
 
 
 def search_produtos(request):
@@ -17,20 +19,19 @@ def search_produtos(request):
             "nome": prod.nome,
             "produto_crawl": [
                 {
-                "id": pc.pk,
-                "mercado": {"unidade": pc.crawl.mercado.unidade, "rede": pc.crawl.mercado.rede},
-                "preco": pc.preco,
-                "produto_id": prod.pk,
-                "produto_nome": prod.nome
-                } for pc in prod.produtocrawl_recente
-            ]
+                    "id": pc.pk,
+                    "mercado": {"unidade": pc.crawl.mercado.unidade, "rede": pc.crawl.mercado.rede},
+                    "preco": pc.preco,
+                    "produto_id": prod.pk,
+                    "produto_nome": prod.nome,
+                }
+                for pc in prod.produtocrawl_recente
+            ],
         }
         if len(serialized_produto["produto_crawl"]) == 0:
             continue
         # TODO: construir um serializer decente
-        response.append(
-            serialized_produto
-        )
+        response.append(serialized_produto)
     return JsonResponse(response, safe=False)
 
 
@@ -46,24 +47,28 @@ def get_mercados_proximos(request):
 
 
 def whoami(request):
-    i_am = {
-        'user': _user2dict(request.user),
-        'authenticated': True,
-    } if request.user.is_authenticated else {'authenticated': False}
+    i_am = (
+        {
+            "user": _user2dict(request.user),
+            "authenticated": True,
+        }
+        if request.user.is_authenticated
+        else {"authenticated": False}
+    )
     return JsonResponse(i_am)
 
 
 def _user2dict(user):
     d = {
-        'id': user.id,
-        'name': user.get_full_name(),
-        'username': user.username,
-        'first_name': user.first_name,
-        'last_name': user.last_name,
-        'email': user.email,
-        'permissions': {
-            'ADMIN': user.is_superuser,
-            'STAFF': user.is_staff,
-        }
+        "id": user.id,
+        "name": user.get_full_name(),
+        "username": user.username,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "email": user.email,
+        "permissions": {
+            "ADMIN": user.is_superuser,
+            "STAFF": user.is_staff,
+        },
     }
     return d

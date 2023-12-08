@@ -5,35 +5,34 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0004_produto_categoria_produto_departamento_and_more'),
+        ("core", "0004_produto_categoria_produto_departamento_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Crawl',
+            name="Crawl",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('mercado', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='core.mercado')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("mercado", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="core.mercado")),
             ],
         ),
         migrations.RemoveField(
-            model_name='produto',
-            name='mercado',
+            model_name="produto",
+            name="mercado",
         ),
         migrations.RemoveField(
-            model_name='produto',
-            name='preco',
+            model_name="produto",
+            name="preco",
         ),
         migrations.CreateModel(
-            name='ProdutoCrawl',
+            name="ProdutoCrawl",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('preco', models.DecimalField(decimal_places=2, max_digits=12)),
-                ('crawl', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='core.crawl')),
-                ('produto', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='core.produto')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("preco", models.DecimalField(decimal_places=2, max_digits=12)),
+                ("crawl", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="core.crawl")),
+                ("produto", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="core.produto")),
             ],
         ),
     ]
