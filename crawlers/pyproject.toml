@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "crawler-mercados"
+name = "crawlers"
 version = "0.1.0"
 description = "Crawleia os principais supermercados de são josé dos campos pra saber onde os preços estão mais baixos"
 authors = ["Natan Lima Viana <natanvianat16@gmail.com>"]
