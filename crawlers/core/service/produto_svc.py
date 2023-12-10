@@ -28,14 +28,18 @@ def produtos(search_term, mercados_proximos):
     # pode até ter uma forma de selecionar a quantidade ... isso aqui é um bom começo
     # isolar unidades e quantidade em campos separados é fundamental pra fazer comparações
     # aproveitar que tá nessa e já fazer marca também
-
+    # a busca tem que agir nas tags, em tudo
     query = reduce(operator.and_, (Q(nome__lower__unaccent__icontains=word) for word in words))
     produto_qs = Produto.objects.filter(query)
-    crawl_qs = Crawl.objects.filter(created_at__gte=datetime.now() - timedelta(days=7)).order_by("-created_at")
+
+    crawl_qs = Crawl.objects.filter(
+        created_at__gte=datetime.now() - timedelta(days=8)
+    ).order_by("-created_at")
+    if mercados_proximos:
+        crawl_qs = crawl_qs.filter(mercado_id__in=mercados_proximos)
+
     mercado_crawl_map = {}
     for crawl in crawl_qs:
-        if mercados_proximos and crawl.mercado.pk not in mercados_proximos:
-            continue
         if crawl.mercado.pk in mercado_crawl_map:
             continue
         mercado_crawl_map[crawl.mercado.pk] = crawl
