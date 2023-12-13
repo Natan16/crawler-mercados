@@ -64,6 +64,10 @@
       </v-slide-group>
       <v-divider class="mt-2" />
     </div>
+
+    <div><v-icon color="green">mdi-arrow-down</v-icon>: Abaixo da média dos outros mercados</div>
+    <div><v-icon color="red">mdi-arrow-up</v-icon>: Acima da média dos outros mercados</div>
+    <div><v-icon color="yellow">mdi-minus</v-icon>: Na média dos outros mercados</div>
   </div>
 </template>
 
