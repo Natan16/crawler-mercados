@@ -11,73 +11,58 @@
         rounded
         @keydown.esc="term = ''"
       />
-      <!-- hint="Clique enter para adicionar à lista" -->
-      <!-- @keydown.enter="adicionarProduto()" -->
+      <!-- TODO: No mobile assim que começar a scrollar tem que fazer o teclado desaparecer!  -->
     </div>
     <loading v-if="loading" />
     <div v-if="buscaVazia">
       Nenhum produto corresponde à sua pesquisa
     </div>
     <div
-      v-for="(produto, idx) in produtos"
+      v-for="(mercadoResponse, idx) in searchResult"
       :key="idx"
     >
-      <v-container v-if="mobile">
-        <div v-if="produtos[idx].produto_crawl.length >= 0" class="text-center">{{produto.nome}}</div>
-        <!-- TODO: mostrar quantos mercados tem ao todo -->
-        <v-slide-group
+      <!-- um container para o mobile e outro para o web -->
+      <!-- impedir quebras de linha -->
+      <v-layout row class="mx-2 my-2">
+        <v-flex xs3>
+          <v-img height="30px" width="80px" contain :src="getLogo(mercadoResponse.mercado.rede)" />
+        </v-flex>
+        <v-flex xs8 class="ml-2" >
+          <p class="text-h8">{{mercadoResponse.mercado.unidade}} </p>
+        </v-flex>
+      </v-layout>
+      <v-slide-group
           selected-class="bg-success"
+      >
+        <v-slide-item
+          justify="center"
+          v-for="(item, idxItem) in mercadoResponse.produto_crawl"
+          :key="idxItem"
         >
-          <v-slide-item
-            align="center" justify="center"
-            v-for="(item, idxItem) in produtos[idx].produto_crawl"
-            :key="idxItem"
-          >
-            <v-card class="ma-1" width="35vw">
-              <v-card-text class="text-center">
-                <div class="text-truncate bg-secondary">
-                  <span>{{item.mercado.unidade}}</span>
-                  <v-img height="30px" width="100%" contain :src="getLogo(item.mercado.rede)" />
-                </div>
-                <div class="text-h6"><strong>R$ {{ item.preco }}</strong></div>
-              </v-card-text>
-              <v-card-actions>
-                <v-btn v-if="item.quantidade > 0" width="16px" rounded x-small @click="removerItem(idx, idxItem)"><v-icon>mdi-minus</v-icon></v-btn>
-                <!-- alinhar o número no centro -->
-                <span class="ml-6" v-if="item.quantidade > 0">{{item.quantidade}}</span>
-                <v-spacer />
-                <v-btn width="16px" rounded x-small @click="adicionarItem(idx, idxItem)"><v-icon>mdi-plus</v-icon></v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-slide-item>
-        </v-slide-group>
-      </v-container>
-      <v-container v-else>
-        <v-card class="pb-4 ma-1">
-          <v-card-title v-if="produtos[idx].produto_crawl.length >= 0" class="text-center">{{produto.nome}}</v-card-title>
-          <v-layout row>
-            <div
-              v-for="(item, idxItem) in produtos[idx].produto_crawl"
-              :key="idxItem"
-            >
-              <v-card-text class="text-center" width="400px">
-                <v-container>
-                  <div>{{item.mercado.unidade}}</div>
-                  <v-img height="60px" width="300px" contain :src="getLogo(item.mercado.rede)" />
-                  <v-spacer />
-                  <div class="text-h4"><strong>R$ {{ item.preco }}</strong></div>
-                </v-container>
-              </v-card-text>
-              <v-card-actions>
-                <v-spacer />
-                <v-btn v-if="item.quantidade > 0" rounded class="ma-1" @click="removerItem(idx, idxItem)"><v-icon>mdi-minus</v-icon></v-btn>
-                <span v-if="item.quantidade > 0">{{item.quantidade}}</span>
-                <v-btn rounded class="ma-1" @click="adicionarItem(idx, idxItem)"><v-icon>mdi-plus</v-icon></v-btn>
-              </v-card-actions>
-            </div>
-          </v-layout>
-        </v-card>
-      </v-container>
+          <v-card class="d-flex flex-column" width="35vw" >
+            <v-chip style="border-radius: 0;" v-visible="item.tags.includes('mais em conta')" small color="green" text-color="white">MAIS EM CONTA</v-chip>
+            <v-card-title>
+              <v-row>
+                R$ {{ item.preco }}
+                <v-icon v-if="item.tags.includes('abaixo da média')" color="green">mdi-arrow-down</v-icon>
+                <v-icon v-else-if="item.tags.includes('acima da média')" color="red">mdi-arrow-up</v-icon>
+                <v-icon v-else color="yellow">mdi-minus</v-icon>
+              </v-row>
+            </v-card-title>
+            <v-card-text style="text-align: left;" class="mb-6">
+              <v-row>
+                {{item.produto.nome}}
+              </v-row>
+            </v-card-text>
+            <v-card-actions>
+              <v-btn v-if="item.quantidade > 0" absolute bottom left rounded x-small @click="removerItem(idx, idxItem)"><v-icon>mdi-minus</v-icon></v-btn>
+              <span class="ml-6" v-if="item.quantidade > 0">{{item.quantidade}}</span>
+              <v-btn absolute bottom right rounded x-small @click="adicionarItem(idx, idxItem)"><v-icon>mdi-plus</v-icon></v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-slide-item>
+      </v-slide-group>
+      <v-divider class="mt-2" />
     </div>
   </div>
 </template>
@@ -96,7 +81,7 @@ export default {
   },
   data () {
     return {
-      produtos: [],
+      searchResult: [],
       term: '',
       logoMap: {
         'SHIBATA': require('~/assets/shibata.svg'),
@@ -131,6 +116,9 @@ export default {
     }
   },
   mounted () {
+    Vue.directive('visible', function (el, binding) {
+      el.style.visibility = binding.value ? 'visible' : 'hidden'
+    })
     if (!this.$store.state.geolocation.geolocation) {
       navigator.geolocation.getCurrentPosition(position => {
         this.saveLocation(position.coords.latitude, position.coords.longitude)
@@ -152,15 +140,19 @@ export default {
       this.buscaVazia = false
       this.loading = true
       const response = await api.search_produto(term, this.mercadosProximos)
-      this.produtos = response
+      this.searchResult = response
       this.loading = false
-      if (this.produtos.length === 0 || !this.produtos.some((produto) => produto.produto_crawl.length > 0)) {
+      if (this.searchResult.length === 0 || !this.searchResult.some((mercadoResult) => mercadoResult.produto_crawl.length > 0)) {
         this.buscaVazia = true
       }
-      this.produtos.forEach(produto => {
-        produto.produto_crawl.forEach(item => { item.quantidade = 0 })
-      })
-      this.updateQuantidades()
+      // this should do for now
+      if (this.mobile) {
+        this.hideKeyboard()
+      }
+      // this.searchResult.forEach(mercadoResult => {
+      //   mercadoResult.produto_crawl.forEach(item => { item.quantidade = 0 })
+      // })
+      // this.updateQuantidades()
     }, 1000),
     reset () {
       this.term = ''
@@ -203,6 +195,9 @@ export default {
     },
     getLogo (rede) {
       return this.logoMap[rede]
+    },
+    hideKeyboard () {
+      document.activeElement.blur()
     }
   }
 }
@@ -220,9 +215,4 @@ export default {
   white-space: nowrap;
 }
 /* só tá aplicando a primeira prop */
-span {
-  white-space: nowrap;
-  overflow: hidden;              /* "overflow" value must be different from "visible" */
-  text-overflow: ellipsis;
-}
 </style>

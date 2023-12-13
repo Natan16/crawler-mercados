@@ -11,14 +11,14 @@ export const produtos = [
         },
         'tags': ['acima da média']
       },
-      // # Ketchup Heinz - 1,033kg R$17.79
+      // Ketchup Heinz - 1,033kg R$17.79
       {
         'id': 67,
         'preco': '30.90',
         'nome': 'Ketchup Heinz Sachê 7g 192 Unidades',
         'produto': {
           'id': 890,
-          'nome': 'Ketchup Heinz Picante - 397g'
+          'nome': 'Ketchup Heinz Sachê 7g 192 Unidades'
         },
         'tags': ['mais em conta', 'abaixo da média']
       }
