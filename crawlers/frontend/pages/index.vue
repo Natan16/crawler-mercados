@@ -5,7 +5,7 @@
         prepend-inner-icon="mdi-magnify"
         outlined
         v-model="term"
-        label="Digite o produto que deseja buscar"
+        label="Digite produto para buscar"
         clearable
         autofocus
         rounded
