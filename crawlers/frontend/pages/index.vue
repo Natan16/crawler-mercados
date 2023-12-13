@@ -10,9 +10,9 @@
         autofocus
         rounded
         @keydown.esc="term = ''"
-        />
-        <!-- hint="Clique enter para adicionar à lista" -->
-        <!-- @keydown.enter="adicionarProduto()" -->
+      />
+      <!-- hint="Clique enter para adicionar à lista" -->
+      <!-- @keydown.enter="adicionarProduto()" -->
     </div>
     <loading v-if="loading" />
     <div v-if="buscaVazia">

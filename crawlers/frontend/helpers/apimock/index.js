@@ -33,5 +33,5 @@ export default {
   },
   search_produto (term, mercadosProximos) {
     return mockasync(produtos)
-  },
+  }
 }
