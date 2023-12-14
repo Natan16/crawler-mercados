@@ -49,15 +49,22 @@
                 <v-icon v-else color="yellow">mdi-minus</v-icon>
               </v-row>
             </v-card-title>
-            <v-card-text style="text-align: left;" class="mb-6">
+            <v-card-text style="text-align: left;">
               <v-row>
                 {{item.produto.nome}}
               </v-row>
             </v-card-text>
-            <v-card-actions>
-              <v-btn v-if="item.quantidade > 0" absolute bottom left rounded x-small @click="removerItem(idx, idxItem)"><v-icon>mdi-minus</v-icon></v-btn>
-              <span class="ml-6" v-if="item.quantidade > 0">{{item.quantidade}}</span>
-              <v-btn absolute bottom right rounded x-small @click="adicionarItem(idx, idxItem)"><v-icon>mdi-plus</v-icon></v-btn>
+            <v-spacer></v-spacer>
+            <v-card-actions class="pa-0">
+              <v-list-item>
+                <v-row
+                  justify="end"
+                >
+                  <v-btn v-visible="item.quantidade > 0" rounded x-small @click="removerItem(idx, idxItem)"><v-icon>mdi-minus</v-icon></v-btn>
+                  <span v-visible="item.quantidade > 0">{{item.quantidade}}</span>
+                  <v-btn rounded x-small @click="adicionarItem(idx, idxItem)"><v-icon>mdi-plus</v-icon></v-btn>
+                </v-row>
+              </v-list-item>
             </v-card-actions>
           </v-card>
         </v-slide-item>
@@ -150,39 +157,34 @@ export default {
       if (this.searchResult.length === 0 || !this.searchResult.some((mercadoResult) => mercadoResult.produto_crawl.length > 0)) {
         this.buscaVazia = true
       }
-      // this should do for now
+      // this should do for now, the ideal behavior is to hidekeyboard on scroll
       if (this.mobile) {
         this.hideKeyboard()
       }
-      // this.searchResult.forEach(mercadoResult => {
-      //   mercadoResult.produto_crawl.forEach(item => { item.quantidade = 0 })
-      // })
+      // inicializa os itens com quantidade 0
+      this.searchResult.forEach(mercadoResult => {
+        mercadoResult.produto_crawl.forEach(item => { item.quantidade = 0 })
+      })
+      // atualiza quantidades com o que já foi adicionado ao carrinho
       // this.updateQuantidades()
     }, 1000),
     reset () {
       this.term = ''
       this.produtos = []
     },
-    // o toast tem que aparecer sempre
-    adicionarProduto () {
-      const result = {term: this.term, produtos: this.produtos}
-      this.$store.commit('lista/addProduto', result)
-      Snacks.show(this.$store, {text: `${this.term} adicionado à lista`, timeout: 2000})
-      this.updateQuantidades()
-    },
     adicionarItem (idx, idxItem) {
-      this.$store.commit('lista/addItem', this.produtos[idx].produto_crawl[idxItem])
-      const newProdutos = this.produtos[idx]
+      // this.$store.commit('lista/addItem', this.produtos[idx].produto_crawl[idxItem])
+      const newProdutos = this.searchResult[idx]
       newProdutos.produto_crawl[idxItem].quantidade += 1
-      Vue.set(this.produtos, idx, newProdutos)
-      Snacks.show(this.$store, {text: `${newProdutos.produto_crawl[idxItem].produto_nome} adicionado à lista`, timeout: 2000})
+      Vue.set(this.searchResult, idx, newProdutos)
+      Snacks.show(this.$store, {text: `${newProdutos.produto_crawl[idxItem].produto.nome} adicionado à lista`, timeout: 2000})
     },
     removerItem (idx, idxItem) {
-      this.$store.commit('lista/removeItem', this.produtos[idx].produto_crawl[idxItem])
-      const newProdutos = this.produtos[idx]
+      // this.$store.commit('lista/removeItem', this.produtos[idx].produto_crawl[idxItem])
+      const newProdutos = this.searchResult[idx]
       newProdutos.produto_crawl[idxItem].quantidade -= 1
-      Vue.set(this.produtos, idx, newProdutos)
-      Snacks.show(this.$store, {text: `${newProdutos.produto_crawl[idxItem].produto_nome} removido da lista`, timeout: 2000})
+      Vue.set(this.searchResult, idx, newProdutos)
+      Snacks.show(this.$store, {text: `${newProdutos.produto_crawl[idxItem].produto.nome} removido da lista`, timeout: 2000})
     },
     updateQuantidades () {
       const produtos = this.produtos
