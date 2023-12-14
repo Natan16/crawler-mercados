@@ -166,36 +166,38 @@ export default {
         mercadoResult.produto_crawl.forEach(item => { item.quantidade = 0 })
       })
       // atualiza quantidades com o que já foi adicionado ao carrinho
-      // this.updateQuantidades()
+      this.updateQuantidades()
     }, 1000),
     reset () {
       this.term = ''
       this.produtos = []
     },
     adicionarItem (idx, idxItem) {
-      // this.$store.commit('lista/addItem', this.produtos[idx].produto_crawl[idxItem])
+      const mercadoResult = this.searchResult[idx]
+      this.$store.commit('lista/addItem', {mercadoResult, idxItem})
       const newProdutos = this.searchResult[idx]
       newProdutos.produto_crawl[idxItem].quantidade += 1
       Vue.set(this.searchResult, idx, newProdutos)
       Snacks.show(this.$store, {text: `${newProdutos.produto_crawl[idxItem].produto.nome} adicionado à lista`, timeout: 2000})
     },
     removerItem (idx, idxItem) {
-      // this.$store.commit('lista/removeItem', this.produtos[idx].produto_crawl[idxItem])
+      const mercadoResult = this.searchResult[idx]
+      this.$store.commit('lista/removeItem', {mercadoResult, idxItem})
       const newProdutos = this.searchResult[idx]
       newProdutos.produto_crawl[idxItem].quantidade -= 1
       Vue.set(this.searchResult, idx, newProdutos)
       Snacks.show(this.$store, {text: `${newProdutos.produto_crawl[idxItem].produto.nome} removido da lista`, timeout: 2000})
     },
     updateQuantidades () {
-      const produtos = this.produtos
+      const searchResult = this.searchResult
       const mercadosLista = this.$store.state.lista.mercadosLista
-      produtos.forEach((produto, idx) => {
-        produto.produto_crawl.forEach((item, idxItem) => {
-          const newQuantidade = (mercadosLista[item.mercado.unidade] && mercadosLista[item.mercado.unidade][item.id] && mercadosLista[item.mercado.unidade][item.id].quantidade) || 0
-          const newProduto = this.produtos[idx]
-          if (newProduto.produto_crawl[idxItem].quantidade !== newQuantidade) {
-            newProduto.produto_crawl[idxItem].quantidade = newQuantidade
-            Vue.set(this.produtos, idx, newProduto)
+      searchResult.forEach((mercadoResult, idx) => {
+        mercadoResult.produto_crawl.forEach((item, idxItem) => {
+          const newQuantidade = (mercadosLista[mercadoResult.mercado.unidade] && mercadosLista[mercadoResult.mercado.unidade][item.id] && mercadosLista[mercadoResult.mercado.unidade][item.id].quantidade) || 0
+          const newMercadoResult = mercadoResult
+          if (newMercadoResult.produto_crawl[idxItem].quantidade !== newQuantidade) {
+            newMercadoResult.produto_crawl[idxItem].quantidade = newQuantidade
+            Vue.set(this.searchResult, idx, newMercadoResult)
           }
         })
       })
