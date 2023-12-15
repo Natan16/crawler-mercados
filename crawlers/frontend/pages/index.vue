@@ -21,8 +21,6 @@
       v-for="(mercadoResponse, idx) in searchResult"
       :key="idx"
     >
-      <!-- um container para o mobile e outro para o web -->
-      <!-- impedir quebras de linha -->
       <v-layout row class="mx-2 my-2">
         <v-flex xs3>
           <v-img height="30px" width="80px" contain :src="getLogo(mercadoResponse.mercado.rede)" />
@@ -36,10 +34,10 @@
       >
         <v-slide-item
           justify="center"
-          v-for="(item, idxItem) in mercadoResponse.produto_crawl"
+          v-for="(item, idxItem) in searchResult[idx].produto_crawl"
           :key="idxItem"
         >
-          <item :item="item"
+          <item :item="item" :key="searchResult[idx].produto_crawl[idxItem].quantidade"
             @adicionar-item="adicionarItem(idx, idxItem)"
             @remover-item="removerItem(idx, idxItem)"
           />
@@ -47,10 +45,10 @@
       </v-slide-group>
       <v-row wrap v-else class="mb-2">
         <div
-          v-for="(item, idxItem) in mercadoResponse.produto_crawl"
+          v-for="(item, idxItem) in searchResult[idx].produto_crawl"
           :key="idxItem"
         >
-          <item style="max-width: 20vw;" :item="item"
+          <item style="max-width: 20vw;" :item="item" :key="searchResult[idx].produto_crawl[idxItem].quantidade"
             @adicionar-item="adicionarItem(idx, idxItem)"
             @remover-item="removerItem(idx, idxItem)"
           />
