@@ -13,7 +13,7 @@
             v-for="(item,idx) in itens" :key="idx"
           >
             <!-- clicar no nome do item pra ter alteranativas -->
-            {{ item.produto_nome }} - R$ {{ item.preco }} - <button @click="removerItem(mercado, idx)"><v-icon>mdi-minus</v-icon></button> {{ item.quantidade }}Un <button @click="adicionarItem(mercado, idx)"><v-icon>mdi-plus</v-icon></button> - R$ {{ (item.quantidade * item.preco).toFixed(2) }}
+            {{ item.produto.nome }} - R$ {{ item.preco }} - <button @click="removerItem(mercado, idx)"><v-icon>mdi-minus</v-icon></button> {{ item.quantidade }}Un <button @click="adicionarItem(mercado, idx)"><v-icon>mdi-plus</v-icon></button> - R$ {{ (item.quantidade * item.preco).toFixed(2) }}
           </li>
           <br>
           <div v-if="ausentes[mercado]">
