@@ -33,7 +33,7 @@ def produtos_mercados_proximos(search_term: str, mercados_proximos: List[int], l
     produto_qs = Produto.objects.annotate(
         rank=SearchRank(vector, query)
     ).order_by("-rank").filter(rank__gt=0.001)[:limit]
-    produto_rank_map = {produto.pk: produto.rank for produto in produto_qs}
+    # produto_rank_map = {produto.pk: produto.rank for produto in produto_qs}
 
     crawl_mercado_map = {}
     for crawl in crawl_qs:
