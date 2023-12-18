@@ -27,14 +27,21 @@ def produtos_mercados_proximos(search_term: str, mercados_proximos: List[int], l
     vector = SearchVector("nome")
     query = SearchQuery(search_term.strip())
     # TODO: dar um peso maior para a quantidade
-    # TODO: tag do mais em conta parece não estar funcionando bem
+    # TODO: tag do mais em conta parece não estar funcionando bem -> debugar o caso do ketchup heinz
     # TODO: considerar palavras quebradas
     # na verdade o que tem que ser desconsiderado aqui é proximidade entre as palavras
     produto_qs = Produto.objects.annotate(
         rank=SearchRank(vector, query)
-    ).order_by("-rank").filter(rank__gt=0.001)[:limit]
-    # produto_rank_map = {produto.pk: produto.rank for produto in produto_qs}
-
+    ).order_by("-rank").filter(rank__gt=0.01)[:limit]
+    for produto in produto_qs:
+        setattr(produto, "rank_r", round(produto.rank, 1))
+    # a ideia de clusteres de correspondência parece interessante
+    # cortar as casas decimais e fazer à partir daí
+    # produto_qs = list(filter(lambda produto: produto.rank >= produto_qs[0].rank - 0.01 , produto_qs))
+    # é uma ideia interessante a ser trabalhada ... perguntar pro artur, talvez
+    # só as maiores correspondências podem ser consideradas de acordo com algum critério de corte
+    produto_rank_map = {produto.pk: produto.rank_r for produto in produto_qs}
+    
     crawl_mercado_map = {}
     for crawl in crawl_qs:
         if crawl.pk in crawl_mercado_map:
@@ -47,10 +54,9 @@ def produtos_mercados_proximos(search_term: str, mercados_proximos: List[int], l
         crawl__in=crawl_qs, produto__in=produto_qs
     ).prefetch_related("produto")
     produto_crawl_list = sorted(list(produto_crawl_qs), key = lambda produto_crawl: (
-                produto_crawl.preco,
+                -produto_rank_map[produto_crawl.produto.pk], produto_crawl.preco,
                 )
             )
-    """-produto_rank_map[produto_crawl.produto.pk],"""
     # produto_crawl_list = list(filter(
     #     lambda pc : produto_rank_map[pc.produto.pk] == produto_rank_map[produto_crawl_list[0].produto.pk],
     #     produto_crawl_list
