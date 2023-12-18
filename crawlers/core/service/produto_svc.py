@@ -92,7 +92,6 @@ def _search_produtos(crawl_produto_crawl_list_map, crawl_mercado_map, produto_pr
                 continue
             dmercado = {}
             dmercado["mercado"] = {"id": mercado.pk, "unidade": mercado.unidade, "rede": mercado.rede}
-            produto_crawl_list = sorted(produto_crawl_list, key=)
             dmercado["produto_crawl"] = []
             for pc in produto_crawl_list:
                 dprodutocrawl = {
