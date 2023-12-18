@@ -62,6 +62,14 @@ class Produto(models.Model):
     volume_ml = DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     unidades = models.IntegerField(default=1)
 
+    @property
+    def medida(self):
+        return self.volume_ml or self.peso_liquido or self.peso_bruto or 1
+
+    @property
+    def unidade_de_medida(self):
+        ... # tem que ser um Enum de unidades de medida possíveis ...  ok, parece bom
+
 
 # TODO: mesmo nome exato tem que ser mapeado como se fosse o mesmo produto
 # mas antes disso é bem mais importante ter mais informação ( outros mercados )
@@ -86,6 +94,8 @@ class ProdutoCrawl(models.Model):
             "mercado": {"unidade": self.crawl.mercado.unidade, "rede": self.crawl.mercado.rede},
             "preco": self.preco,
         }
+    
+    # preco unitário aqui é bem interessante ... sqn, properties que não dependem só do modelo não deveriam ser properties
 
 
 # l = [set(p.produtocrawl_set.all().values_list("preco")) for p in Produto.objects.all()[:100] if len(set([pc.crawl.mercado_id for pc in ProdutoCrawl.objects.filter(produto=p)])) > 1]
