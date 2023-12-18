@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models.fields import DecimalField
 
 from commons.geoutils import Coords
+from enum import Enum
 
 UFS = [
     ("AC", "Acre"),
@@ -50,9 +51,15 @@ class Mercado(models.Model):
         return Coords(self.latitude, self.longitude)
 
 
+class UnidadeDeMedida(Enum):
+    GRAMA = "grama"
+    ML = "minilitro"
+    NENHUMA = "nenhuma"
+
+
 class Produto(models.Model):
     item = models.CharField(max_length=512, unique=True)
-    nome = models.CharField(max_length=512, null=True, blank=True)
+    nome = models.CharField(max_length=512, null=True, blank=True) # TODO: tirar os espaços entre o peso e sua unidade
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     categoria = models.CharField(max_length=128, null=True, blank=True)
@@ -68,13 +75,11 @@ class Produto(models.Model):
 
     @property
     def unidade_de_medida(self):
-        ... # tem que ser um Enum de unidades de medida possíveis ...  ok, parece bom
-
-
-# TODO: mesmo nome exato tem que ser mapeado como se fosse o mesmo produto
-# mas antes disso é bem mais importante ter mais informação ( outros mercados )
-# tem que tirar qos espaços entre o peso e sua unidade
-# busca vazia tem de ter alguma menssagem sendo exibida ... algo que dê detalhes de como pesquisar
+        if self.volume_ml is not None:
+            return UnidadeDeMedida.ML
+        if self.peso_liquido is not None or self.peso_bruto is not None:
+            return UnidadeDeMedida.GRAMA
+        return UnidadeDeMedida.NENHUMA
 
 
 class Crawl(models.Model):
@@ -94,8 +99,5 @@ class ProdutoCrawl(models.Model):
             "mercado": {"unidade": self.crawl.mercado.unidade, "rede": self.crawl.mercado.rede},
             "preco": self.preco,
         }
-    
-    # preco unitário aqui é bem interessante ... sqn, properties que não dependem só do modelo não deveriam ser properties
-
 
 # l = [set(p.produtocrawl_set.all().values_list("preco")) for p in Produto.objects.all()[:100] if len(set([pc.crawl.mercado_id for pc in ProdutoCrawl.objects.filter(produto=p)])) > 1]

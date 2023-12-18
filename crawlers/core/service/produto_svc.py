@@ -2,57 +2,11 @@ from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from datetime import datetime, timedelta
 from django.db.models import Value
 from numpy import mean
+from decimal import Decimal
 
 from core.models import Crawl, Produto, ProdutoCrawl
 from collections import defaultdict
-from decimal import Decimal
 from typing import List
-
-
-# é, falta só isso aqui mesmo e tá pronto
-def _get_id_mais_em_conta(itens: List[ProdutoCrawl]): # aqui talvez seja interessante retornar o índice do mais em conta
-    # agrupar por tipo de unidades pra descobrir o mais comum
-    for item in itens:
-        item.produto.peso_liquido
-        item.produto.volume_ml
-        # o default é nada
-    # primeiro vou escrever do jeito burro e depois refatorar
-    # se tiver mais de uma vez é pack, não deveria entrar
-    item.preco/(item.produto.unidades * item.produto.medida)
-
-
-def search_produtos(crawl_produto_crawl_list_map, crawl_mercado_map, produto_preco_medio_map):
-    dmercados = []
-    for crawl_id, produto_crawl_list in crawl_produto_crawl_list_map.items():
-            id_mais_em_conta = _get_id_mais_em_conta(produto_crawl_list) # se for -1 não precisa colocar
-            mercado = crawl_mercado_map.get(crawl_id)
-            if not mercado:
-                continue
-            dmercado = {}
-            dmercado["mercado"] = {"id": mercado.pk, "unidade": mercado.unidade, "rede": mercado.rede}
-            produto_crawl_list = sorted(produto_crawl_list, key=)
-            dmercado["produto_crawl"] = []
-            for pc in produto_crawl_list:
-                dprodutocrawl = {
-                    "id": pc.id,
-                    "preco": pc.preco,
-                    "produto": {
-                        "id": pc.produto.pk,
-                        "nome": pc.produto.nome
-                    },
-                    "tags": []
-                }
-                # coloca tags
-                if pc.id == id_mais_em_conta:
-                    dprodutocrawl["tags"].append("mais em conta")
-                preco_medio = produto_preco_medio_map[pc.produto.id]
-                if pc.preco > Decimal("1.05") * preco_medio:
-                    dprodutocrawl["tags"].append("acima da media")
-                elif pc.preco < Decimal("0.95") * preco_medio:
-                    dprodutocrawl["tags"].append("abaixo da media")
-
-                dmercado["produto_crawl"].append(dprodutocrawl)
-            dmercados.append(dmercado)
 
 
 def produtos_mercados_proximos(search_term: str, mercados_proximos: List[int], limit: int = 50):
@@ -101,7 +55,65 @@ def produtos_mercados_proximos(search_term: str, mercados_proximos: List[int], l
     for produto_crawl in produto_crawl_qs:
         produto_precos_map[produto_crawl.produto.pk].append(produto_crawl.preco) 
     produto_preco_medio_map = {produto_id: mean(precos) for produto_id, precos in produto_precos_map.items()} 
-    dmercados = search_produtos(crawl_produto_crawl_list_map, crawl_mercado_map, produto_preco_medio_map)
+    dmercados = _search_produtos(crawl_produto_crawl_list_map, crawl_mercado_map, produto_preco_medio_map)
     
     return dmercados
+
+
+def _get_id_mais_em_conta(itens: List[ProdutoCrawl]):
+    """
+        retorna id do produto crawl mais em conta de uma lista de
+        produtos crawl considerando a unidade de medida mais comum
+        dessa lista. Se Se não tiver ao menos 2 itens pra comparar
+        retorna -1
+    """
+    unidade_de_medida_item_map = defaultdict(list)
+
+    for item in itens:
+        unidade_de_medida_item_map[item.produto.unidade_de_medida].append(item)
+    unidade_mais_comum, _ =  max(unidade_de_medida_item_map.items(), key= lambda _, v: len(v))
+    itens_com_unidade_mais_comum = unidade_de_medida_item_map[unidade_mais_comum]
+
+    if not itens_com_unidade_mais_comum or len(itens_com_unidade_mais_comum) < 2:
+        return -1
+    item_com_menor_preco_por_unidade = min(
+        itens_com_unidade_mais_comum,
+        key = lambda item: item.preco/(item.produto.unidades * item.produto.medida)
+    )
+    return item_com_menor_preco_por_unidade.pk
+
+
+def _search_produtos(crawl_produto_crawl_list_map, crawl_mercado_map, produto_preco_medio_map):
+    dmercados = []
+    for crawl_id, produto_crawl_list in crawl_produto_crawl_list_map.items():
+            id_mais_em_conta = _get_id_mais_em_conta(produto_crawl_list)
+            mercado = crawl_mercado_map.get(crawl_id)
+            if not mercado:
+                continue
+            dmercado = {}
+            dmercado["mercado"] = {"id": mercado.pk, "unidade": mercado.unidade, "rede": mercado.rede}
+            produto_crawl_list = sorted(produto_crawl_list, key=)
+            dmercado["produto_crawl"] = []
+            for pc in produto_crawl_list:
+                dprodutocrawl = {
+                    "id": pc.id,
+                    "preco": pc.preco,
+                    "produto": {
+                        "id": pc.produto.pk,
+                        "nome": pc.produto.nome
+                    },
+                    "tags": []
+                }
+                # coloca tags
+                if pc.id == id_mais_em_conta:
+                    dprodutocrawl["tags"].append("mais em conta")
+                preco_medio = produto_preco_medio_map[pc.produto.id]
+                if pc.preco > Decimal("1.05") * preco_medio:
+                    dprodutocrawl["tags"].append("acima da media")
+                elif pc.preco < Decimal("0.95") * preco_medio:
+                    dprodutocrawl["tags"].append("abaixo da media")
+
+                dmercado["produto_crawl"].append(dprodutocrawl)
+            dmercados.append(dmercado)
+
     
