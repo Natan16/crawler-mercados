@@ -24,11 +24,15 @@ def produtos_mercados_proximos(search_term: str, mercados_proximos: List[int], l
         crawl_qs = crawl_qs[:5]
 
     # produtos de interesse
-    vector = SearchVector("nome", "categoria", "departamento")
+    vector = SearchVector("nome")
     query = SearchQuery(search_term.strip())
+    # TODO: dar um peso maior para a quantidade
+    # TODO: tag do mais em conta parece não estar funcionando bem
+    # TODO: considerar palavras quebradas
+    # na verdade o que tem que ser desconsiderado aqui é proximidade entre as palavras
     produto_qs = Produto.objects.annotate(
-        rank=SearchRank(vector, query, normalization=Value(16))
-    ).order_by("-rank")[:limit]
+        rank=SearchRank(vector, query)
+    ).order_by("-rank").filter(rank__gt=0.001)[:limit]
     produto_rank_map = {produto.pk: produto.rank for produto in produto_qs}
 
     crawl_mercado_map = {}
@@ -43,9 +47,14 @@ def produtos_mercados_proximos(search_term: str, mercados_proximos: List[int], l
         crawl__in=crawl_qs, produto__in=produto_qs
     ).prefetch_related("produto")
     produto_crawl_list = sorted(list(produto_crawl_qs), key = lambda produto_crawl: (
-                -produto_rank_map[produto_crawl.produto.pk], produto_crawl.preco
+                produto_crawl.preco,
                 )
             )
+    """-produto_rank_map[produto_crawl.produto.pk],"""
+    # produto_crawl_list = list(filter(
+    #     lambda pc : produto_rank_map[pc.produto.pk] == produto_rank_map[produto_crawl_list[0].produto.pk],
+    #     produto_crawl_list
+    # ))
 
     crawl_produto_crawl_list_map = defaultdict(list)
     for produto_crawl in produto_crawl_list:
@@ -71,7 +80,7 @@ def _get_id_mais_em_conta(itens: List[ProdutoCrawl]):
 
     for item in itens:
         unidade_de_medida_item_map[item.produto.unidade_de_medida].append(item)
-    unidade_mais_comum, _ =  max(unidade_de_medida_item_map.items(), key= lambda _, v: len(v))
+    unidade_mais_comum, _ =  max(unidade_de_medida_item_map.items(), key= lambda kv: len(kv[1]))
     itens_com_unidade_mais_comum = unidade_de_medida_item_map[unidade_mais_comum]
 
     if not itens_com_unidade_mais_comum or len(itens_com_unidade_mais_comum) < 2:
@@ -108,11 +117,12 @@ def _search_produtos(crawl_produto_crawl_list_map, crawl_mercado_map, produto_pr
                     dprodutocrawl["tags"].append("mais em conta")
                 preco_medio = produto_preco_medio_map[pc.produto.id]
                 if pc.preco > Decimal("1.05") * preco_medio:
-                    dprodutocrawl["tags"].append("acima da media")
+                    dprodutocrawl["tags"].append("acima da média")
                 elif pc.preco < Decimal("0.95") * preco_medio:
-                    dprodutocrawl["tags"].append("abaixo da media")
+                    dprodutocrawl["tags"].append("abaixo da média")
 
                 dmercado["produto_crawl"].append(dprodutocrawl)
             dmercados.append(dmercado)
+    return dmercados
 
     
