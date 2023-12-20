@@ -32,6 +32,7 @@ def produtos_mercados_proximos(search_term: str, mercados_proximos: List[int], l
     query = SearchQuery(search_term, config="portuguese")
     # TODO: dar um peso maior para a quantidade
     # TODO: tag do mais em conta parece não estar funcionando bem -> debugar o caso do ketchup heinz
+    # vou ter que escovar bit porque a máquina é ruim
     produto_qs = (
         Produto.objects.annotate(
             search=vector, rank=SearchRank(vector, query), similarity=TrigramSimilarity("nome", search_term)
@@ -39,11 +40,12 @@ def produtos_mercados_proximos(search_term: str, mercados_proximos: List[int], l
         .order_by("-rank", "-similarity")
         .filter(Q(rank__gt=0.01, search=query) | Q(similarity__gt=0.01))[:limit]
     )
+    produto_qs = list(produto_qs)
     for produto in produto_qs:
         setattr(produto, "rank_r", round(produto.rank, 1))
     produto_ordering_map = {produto.pk: produto.rank_r for produto in produto_qs}
     produto_rank_map = {produto.pk: produto.rank for produto in produto_qs}
-    if produto_qs.count() > 0 and produto_qs[0].rank < 0.001:
+    if len(produto_qs) > 0 and produto_qs[0].rank < 0.001:
         produto_ordering_map = {produto.pk: produto.similarity for produto in produto_qs}
 
     crawl_mercado_map = {}
