@@ -1,4 +1,5 @@
-from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
+from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector,  TrigramSimilarity
+from django.db.models import Q
 from datetime import datetime, timedelta
 from django.db.models import Value
 from numpy import mean
@@ -13,7 +14,7 @@ def produtos_mercados_proximos(search_term: str, mercados_proximos: List[int], l
     """
         procura produtos numa lista de mercados próximos, considerando no máximo limit produtos
     """
-    
+    search_term = search_term.strip()
     # crawls de interesse
     crawl_qs = Crawl.objects.filter(
         created_at__gte=datetime.now() - timedelta(days=8)
@@ -24,23 +25,21 @@ def produtos_mercados_proximos(search_term: str, mercados_proximos: List[int], l
         crawl_qs = crawl_qs[:5]
 
     # produtos de interesse
-    vector = SearchVector("nome")
-    query = SearchQuery(search_term.strip())
+    vector = SearchVector("nome", "departamento", "categoria", config="portuguese")
+    query = SearchQuery(search_term, config="portuguese")
     # TODO: dar um peso maior para a quantidade
     # TODO: tag do mais em conta parece não estar funcionando bem -> debugar o caso do ketchup heinz
-    # TODO: considerar palavras quebradas
-    # na verdade o que tem que ser desconsiderado aqui é proximidade entre as palavras
     produto_qs = Produto.objects.annotate(
-        rank=SearchRank(vector, query)
-    ).order_by("-rank").filter(rank__gt=0.01)[:limit]
+        search=vector,
+        rank=SearchRank(vector, query),
+        similarity=TrigramSimilarity("nome", search_term)
+    ).order_by("-rank", "-similarity").filter(Q(search=query) | Q(similarity__gt=0))[:limit]
     for produto in produto_qs:
         setattr(produto, "rank_r", round(produto.rank, 1))
-    # a ideia de clusteres de correspondência parece interessante
-    # cortar as casas decimais e fazer à partir daí
-    # produto_qs = list(filter(lambda produto: produto.rank >= produto_qs[0].rank - 0.01 , produto_qs))
-    # é uma ideia interessante a ser trabalhada ... perguntar pro artur, talvez
-    # só as maiores correspondências podem ser consideradas de acordo com algum critério de corte
-    produto_rank_map = {produto.pk: produto.rank_r for produto in produto_qs}
+    produto_ordering_map = {produto.pk: produto.rank_r for produto in produto_qs}
+    produto_rank_map = {produto.pk: produto.rank for produto in produto_qs}
+    if produto_qs.count() > 0 and produto_qs[0].rank < 0.001:
+        produto_ordering_map = {produto.pk: produto.similarity for produto in produto_qs}
     
     crawl_mercado_map = {}
     for crawl in crawl_qs:
@@ -49,22 +48,18 @@ def produtos_mercados_proximos(search_term: str, mercados_proximos: List[int], l
         crawl_mercado_map[crawl.pk] = crawl.mercado
 
 
-    # ordena produto crawl por rank do produto e depois por preço
     produto_crawl_qs = ProdutoCrawl.objects.filter(
         crawl__in=crawl_qs, produto__in=produto_qs
     ).prefetch_related("produto")
     produto_crawl_list = sorted(list(produto_crawl_qs), key = lambda produto_crawl: (
-                -produto_rank_map[produto_crawl.produto.pk], produto_crawl.preco,
+                -produto_ordering_map[produto_crawl.produto.pk], produto_crawl.preco,
                 )
             )
-    # produto_crawl_list = list(filter(
-    #     lambda pc : produto_rank_map[pc.produto.pk] == produto_rank_map[produto_crawl_list[0].produto.pk],
-    #     produto_crawl_list
-    # ))
 
     crawl_produto_crawl_list_map = defaultdict(list)
     for produto_crawl in produto_crawl_list:
         crawl_produto_crawl_list_map[produto_crawl.crawl_id].append(produto_crawl)
+        setattr(produto_crawl, "rank", produto_rank_map[produto_crawl.produto.pk])
 
     produto_precos_map = defaultdict(list)
     for produto_crawl in produto_crawl_qs:
@@ -82,6 +77,9 @@ def _get_id_mais_em_conta(itens: List[ProdutoCrawl]):
         dessa lista. Se Se não tiver ao menos 2 itens pra comparar
         retorna -1
     """
+    itens = list(filter(lambda pc: pc.rank > 0.01, itens))
+    if not itens:
+        return -1
     unidade_de_medida_item_map = defaultdict(list)
 
     for item in itens:
