@@ -4,8 +4,8 @@ from decimal import Decimal
 from typing import List
 from functools import reduce
 import operator
-from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector, TrigramSimilarity
-from django.db.models import Q, CharField, F
+from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
+from django.db.models import Q, CharField, Exists, OuterRef, Subquery
 from django.db.models.functions import Lower
 from numpy import mean
 
@@ -44,6 +44,12 @@ def produtos_mercados_proximos(search_term: str, mercados_proximos: List[int], l
             rank=SearchRank(vector, query)
         )
         .order_by("-rank")
+        .annotate(active=Exists(
+            Subquery(ProdutoCrawl.objects.filter(
+                crawl__in=crawl_qs, produto_id=OuterRef("pk")
+            )
+        )))
+        .filter(active=True)
         .filter(Q(rank__gt=0.01) | extra_query)[:limit]
     )
     for produto in produto_qs:
