@@ -37,7 +37,7 @@ def produtos_mercados_proximos(search_term: str, mercados_proximos: List[int], l
             search=vector, rank=SearchRank(vector, query), similarity=TrigramSimilarity("nome", search_term)
         )
         .order_by("-rank", "-similarity")
-        .filter(Q(search=query) | Q(similarity__gt=0))[:limit]
+        .filter(Q(rank__gt=0.01, search=query) | Q(similarity__gt=0.01))[:limit]
     )
     for produto in produto_qs:
         setattr(produto, "rank_r", round(produto.rank, 1))
