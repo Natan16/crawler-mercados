@@ -5,10 +5,14 @@ from typing import List
 from functools import reduce
 import operator
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector, TrigramSimilarity
-from django.db.models import Q
+from django.db.models import Q, CharField, F
+from django.db.models.functions import Lower
 from numpy import mean
 
 from core.models import Crawl, Produto, ProdutoCrawl
+
+CharField.register_lookup(Lower)
+
 
 
 def produtos_mercados_proximos(search_term: str, mercados_proximos: List[int], limit: int = 20):
@@ -34,21 +38,21 @@ def produtos_mercados_proximos(search_term: str, mercados_proximos: List[int], l
     # TODO: dar um peso maior para a quantidade
     # TODO: tag do mais em conta parece não estar funcionando bem -> debugar o caso do ketchup heinz
     # vou ter que escovar bit porque a máquina é ruim
+    words = search_term.split()
+    extra_query = reduce(operator.and_, (Q(nome__lower__unaccent__icontains=word) for word in words))
     produto_qs = (
         Produto.objects.annotate(
-            search=vector, rank=SearchRank(vector, query)
+            rank=SearchRank(vector, query)
         )
         .order_by("-rank")
-        .filter(Q(rank__gt=0.01, search=query))[:limit]
+        .filter(Q(rank__gt=0.01) | extra_query)[:limit]
     )
-    query = reduce(operator.and_, (Q(nome__lower__unaccent__icontains=word) for word in search_term.split()))
-    produto_similar_qs = Produto.objects.filter(query).annotate(rank=0)[:limit]
-
-    produto_qs = produto_qs if produto_qs.exists() else produto_similar_qs
+    # produto_similar_qs = Produto.objects.filter(Q(rank__gt=0.01) | query)[:limit]
+    # produto_qs = produto_qs.union(produto_similar_qs)
     for produto in produto_qs:
-        setattr(produto, "rank_r", round(produto.rank, 1))
+        setattr(produto, "rank_r", round(getattr(produto, "rank", 0), 1))
     produto_ordering_map = {produto.pk: produto.rank_r for produto in produto_qs}
-    produto_rank_map = {produto.pk: produto.rank for produto in produto_qs}
+    produto_rank_map = {produto.pk: getattr(produto, "rank", 0) for produto in produto_qs}
 
     crawl_mercado_map = {}
     for crawl in crawl_qs:
