@@ -1,8 +1,9 @@
+from enum import Enum
+
 from django.db import models
 from django.db.models.fields import DecimalField
 
 from commons.geoutils import Coords
-from enum import Enum
 
 UFS = [
     ("AC", "Acre"),
@@ -59,7 +60,7 @@ class UnidadeDeMedida(Enum):
 
 class Produto(models.Model):
     item = models.CharField(max_length=512, unique=True)
-    nome = models.CharField(max_length=512, null=True, blank=True) # TODO: tirar os espaços entre o peso e sua unidade
+    nome = models.CharField(max_length=512, null=True, blank=True)  # TODO: tirar os espaços entre o peso e sua unidade
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     categoria = models.CharField(max_length=128, null=True, blank=True)
@@ -99,5 +100,6 @@ class ProdutoCrawl(models.Model):
             "mercado": {"unidade": self.crawl.mercado.unidade, "rede": self.crawl.mercado.rede},
             "preco": self.preco,
         }
+
 
 # l = [set(p.produtocrawl_set.all().values_list("preco")) for p in Produto.objects.all()[:100] if len(set([pc.crawl.mercado_id for pc in ProdutoCrawl.objects.filter(produto=p)])) > 1]
