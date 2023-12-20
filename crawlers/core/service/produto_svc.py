@@ -63,7 +63,7 @@ def produtos_mercados_proximos(search_term: str, mercados_proximos: List[int], l
     produto_crawl_list = sorted(
         list(produto_crawl_qs),
         key=lambda produto_crawl: (
-            -produto_ordering_map[produto_crawl.produto.pk],
+            -produto_ordering_map.get(produto_crawl.produto.pk, 0),
             produto_crawl.preco,
         ),
     )
@@ -71,7 +71,7 @@ def produtos_mercados_proximos(search_term: str, mercados_proximos: List[int], l
     crawl_produto_crawl_list_map = defaultdict(list)
     for produto_crawl in produto_crawl_list:
         crawl_produto_crawl_list_map[produto_crawl.crawl_id].append(produto_crawl)
-        setattr(produto_crawl, "rank", produto_rank_map[produto_crawl.produto.pk])
+        setattr(produto_crawl, "rank", produto_rank_map.get(produto_crawl.produto.pk, 0))
 
     produto_precos_map = defaultdict(list)
     for produto_crawl in produto_crawl_qs:
