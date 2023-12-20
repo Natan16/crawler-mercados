@@ -10,7 +10,7 @@ from numpy import mean
 from core.models import Crawl, Produto, ProdutoCrawl
 
 
-def produtos_mercados_proximos(search_term: str, mercados_proximos: List[int], limit: int = 50):
+def produtos_mercados_proximos(search_term: str, mercados_proximos: List[int], limit: int = 20):
     """
     procura produtos numa lista de mercados próximos, considerando no máximo limit produtos
     """

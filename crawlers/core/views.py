@@ -10,7 +10,7 @@ from core.service.produto_svc import produtos_mercados_proximos
 def search_produtos(request):
     search_term = request.GET.get("search_term")
     mercados_proximos = json.loads(request.GET.get("mercados_proximos", "[]"))
-    limit = 50
+    limit = 20
     response = produtos_mercados_proximos(search_term, mercados_proximos, limit)
     return JsonResponse(response, safe=False)
 
