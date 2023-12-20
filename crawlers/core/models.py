@@ -4,6 +4,8 @@ from django.db import models
 from django.db.models.fields import DecimalField
 
 from commons.geoutils import Coords
+from django.contrib.postgres.indexes import GinIndex
+from django.contrib.postgres.search import SearchVector
 
 UFS = [
     ("AC", "Acre"),
@@ -81,6 +83,14 @@ class Produto(models.Model):
         if self.peso_liquido is not None or self.peso_bruto is not None:
             return UnidadeDeMedida.GRAMA
         return UnidadeDeMedida.NENHUMA
+    
+    class Meta:
+        indexes = [
+            GinIndex(
+                SearchVector("nome", "departamento", "categoria", config="portuguese"),
+                name="produto_search_vector_idx",
+            )
+        ]
 
 
 class Crawl(models.Model):
