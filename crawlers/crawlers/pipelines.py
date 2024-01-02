@@ -8,7 +8,6 @@ from core.models import Produto
 
 
 class VipCommercePipeline:
-
     def __init__(self):
         pass
 
@@ -19,16 +18,15 @@ class VipCommercePipeline:
             categoria=carrefour_item["categoria"],
             departamento=carrefour_item["departamento"],
             peso_liquido=carrefour_item["peso_liquido"],
-            peso_bruto=carrefour_item["peso_bruto"]
+            peso_bruto=carrefour_item["peso_bruto"],
         )
         spider.produtos_map[carrefour_item["item"]] = (prod, carrefour_item["preco"])
-    
+
     def close_spider(self, spider):
         spider.armazena_no_banco()
 
 
 class CarrefourPipeline:
-
     def __init__(self):
         pass
 
@@ -40,13 +38,12 @@ class CarrefourPipeline:
             departamento=carrefour_item["departamento"],
         )
         spider.produtos_map[carrefour_item["item"]] = (prod, carrefour_item["preco"])
-    
+
     def close_spider(self, spider):
         spider.armazena_no_banco()
 
 
 class PaoDeAcucarPipeline:
-
     def __init__(self):
         pass
 
@@ -58,13 +55,12 @@ class PaoDeAcucarPipeline:
             departamento=pao_de_acucar_item["departamento"],
         )
         spider.produtos_map[pao_de_acucar_item["item"]] = (prod, pao_de_acucar_item["preco"])
-    
+
     def close_spider(self, spider):
         spider.armazena_no_banco()
 
 
 class TendaPipeline:
-
     def __init__(self):
         pass
 

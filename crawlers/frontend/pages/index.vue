@@ -5,80 +5,62 @@
         prepend-inner-icon="mdi-magnify"
         outlined
         v-model="term"
-        label="Digite o produto que deseja buscar"
-        hint="Clique enter para adicionar à lista"
+        label="Digite produto para buscar"
         clearable
         autofocus
         rounded
-        @keydown.enter="adicionarProduto()"
         @keydown.esc="term = ''"
       />
+      <!-- TODO: No mobile assim que começar a scrollar tem que fazer o teclado desaparecer!  -->
     </div>
     <loading v-if="loading" />
     <div v-if="buscaVazia">
       Nenhum produto corresponde à sua pesquisa
     </div>
     <div
-      v-for="(produto, idx) in produtos"
+      v-for="(mercadoResponse, idx) in searchResult"
       :key="idx"
     >
-      <v-container v-if="mobile">
-        <div v-if="produtos[idx].produto_crawl.length >= 0" class="text-center">{{produto.nome}}</div>
-        <!-- TODO: mostrar quantos mercados tem ao todo -->
-        <v-slide-group
+      <v-layout row class="mx-2 my-2">
+        <v-flex xs3>
+          <v-img height="30px" width="80px" contain :src="getLogo(mercadoResponse.mercado.rede)" />
+        </v-flex>
+        <v-flex xs8 class="ml-2" >
+          <p class="text-h8">{{mercadoResponse.mercado.unidade}} </p>
+        </v-flex>
+      </v-layout>
+      <v-slide-group v-if="mobile"
           selected-class="bg-success"
+      >
+        <v-slide-item
+          justify="center"
+          v-for="(item, idxItem) in searchResult[idx].produto_crawl"
+          :key="idxItem"
         >
-          <v-slide-item
-            align="center" justify="center"
-            v-for="(item, idxItem) in produtos[idx].produto_crawl"
-            :key="idxItem"
-          >
-            <v-card class="ma-1" width="35vw">
-              <v-card-text class="text-center">
-                <div class="text-truncate bg-secondary">
-                  <span>{{item.mercado.unidade}}</span>
-                  <v-img height="30px" width="100%" contain :src="getLogo(item.mercado.rede)" />
-                </div>
-                <div class="text-h6"><strong>R$ {{ item.preco }}</strong></div>
-              </v-card-text>
-              <v-card-actions>
-                <v-btn v-if="item.quantidade > 0" width="16px" rounded x-small @click="removerItem(idx, idxItem)"><v-icon>mdi-minus</v-icon></v-btn>
-                <!-- alinhar o número no centro -->
-                <span class="ml-6" v-if="item.quantidade > 0">{{item.quantidade}}</span>
-                <v-spacer />
-                <v-btn width="16px" rounded x-small @click="adicionarItem(idx, idxItem)"><v-icon>mdi-plus</v-icon></v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-slide-item>
-        </v-slide-group>
-      </v-container>
-      <v-container v-else>
-        <v-card class="pb-4 ma-1">
-          <v-card-title v-if="produtos[idx].produto_crawl.length >= 0" class="text-center">{{produto.nome}}</v-card-title>
-          <v-layout row>
-            <div
-              v-for="(item, idxItem) in produtos[idx].produto_crawl"
-              :key="idxItem"
-            >
-              <v-card-text class="text-center" width="400px">
-                <v-container>
-                  <div>{{item.mercado.unidade}}</div>
-                  <v-img height="60px" width="300px" contain :src="getLogo(item.mercado.rede)" />
-                  <v-spacer />
-                  <div class="text-h4"><strong>R$ {{ item.preco }}</strong></div>
-                </v-container>
-              </v-card-text>
-              <v-card-actions>
-                <v-spacer />
-                <v-btn v-if="item.quantidade > 0" rounded class="ma-1" @click="removerItem(idx, idxItem)"><v-icon>mdi-minus</v-icon></v-btn>
-                <span v-if="item.quantidade > 0">{{item.quantidade}}</span>
-                <v-btn rounded class="ma-1" @click="adicionarItem(idx, idxItem)"><v-icon>mdi-plus</v-icon></v-btn>
-              </v-card-actions>
-            </div>
-          </v-layout>
-        </v-card>
-      </v-container>
+          <item :item="item" :key="searchResult[idx].produto_crawl[idxItem].quantidade"
+            @adicionar-item="adicionarItem(idx, idxItem)"
+            @remover-item="removerItem(idx, idxItem)"
+          />
+        </v-slide-item>
+      </v-slide-group>
+      <v-row wrap v-else class="mb-2">
+        <div
+          v-for="(item, idxItem) in searchResult[idx].produto_crawl"
+          :key="idxItem"
+        >
+          <item style="max-width: 20vw;" :item="item" :key="searchResult[idx].produto_crawl[idxItem].quantidade"
+            @adicionar-item="adicionarItem(idx, idxItem)"
+            @remover-item="removerItem(idx, idxItem)"
+          />
+        </div>
+      </v-row>
+      <v-divider class="mt-2" />
     </div>
+
+    <div><v-icon color="green">mdi-arrow-down</v-icon>: Abaixo da média dos outros mercados</div>
+    <div><v-icon color="red">mdi-arrow-up</v-icon>: Acima da média dos outros mercados</div>
+    <div><v-icon color="yellow">mdi-minus</v-icon>: Na média dos outros mercados</div>
+    <div><v-chip style="border-radius: 0;" small color="green" text-color="white">MAIS EM CONTA</v-chip>: Produto do mercado com melhor custo-benefício </div>
   </div>
 </template>
 
@@ -89,14 +71,16 @@ import Vue from 'vue'
 import api from '~api'
 import Snacks from '~/helpers/Snacks.js'
 import loading from '~/components/loading'
+import item from '~/components/item'
 
 export default {
   components: {
-    loading
+    loading,
+    item
   },
   data () {
     return {
-      produtos: [],
+      searchResult: [],
       term: '',
       logoMap: {
         'SHIBATA': require('~/assets/shibata.svg'),
@@ -131,6 +115,9 @@ export default {
     }
   },
   mounted () {
+    Vue.directive('visible', function (el, binding) {
+      el.style.visibility = binding.value ? 'visible' : 'hidden'
+    })
     if (!this.$store.state.geolocation.geolocation) {
       navigator.geolocation.getCurrentPosition(position => {
         this.saveLocation(position.coords.latitude, position.coords.longitude)
@@ -152,57 +139,61 @@ export default {
       this.buscaVazia = false
       this.loading = true
       const response = await api.search_produto(term, this.mercadosProximos)
-      this.produtos = response
+      this.searchResult = response
       this.loading = false
-      if (this.produtos.length === 0 || !this.produtos.some((produto) => produto.produto_crawl.length > 0)) {
+      if (this.searchResult.length === 0 || !this.searchResult.some((mercadoResult) => mercadoResult.produto_crawl.length > 0)) {
         this.buscaVazia = true
       }
-      this.produtos.forEach(produto => {
-        produto.produto_crawl.forEach(item => { item.quantidade = 0 })
+      // this should do for now, the ideal behavior is to hidekeyboard on scroll
+      if (this.mobile) {
+        this.hideKeyboard()
+      }
+      // inicializa os itens com quantidade 0
+      this.searchResult.forEach(mercadoResult => {
+        mercadoResult.produto_crawl.forEach(item => { item.quantidade = 0 })
       })
+      // atualiza quantidades com o que já foi adicionado ao carrinho
       this.updateQuantidades()
     }, 1000),
     reset () {
       this.term = ''
       this.produtos = []
     },
-    // o toast tem que aparecer sempre
-    adicionarProduto () {
-      const result = {term: this.term, produtos: this.produtos}
-      this.$store.commit('lista/addProduto', result)
-      Snacks.show(this.$store, {text: `${this.term} adicionado à lista`, timeout: 2000})
-      this.updateQuantidades()
-    },
     adicionarItem (idx, idxItem) {
-      this.$store.commit('lista/addItem', this.produtos[idx].produto_crawl[idxItem])
-      const newProdutos = this.produtos[idx]
+      const mercadoResult = this.searchResult[idx]
+      this.$store.commit('lista/addItem', {mercadoResult, idxItem})
+      const newProdutos = this.searchResult[idx]
       newProdutos.produto_crawl[idxItem].quantidade += 1
-      Vue.set(this.produtos, idx, newProdutos)
-      Snacks.show(this.$store, {text: `${newProdutos.produto_crawl[idxItem].produto_nome} adicionado à lista`, timeout: 2000})
+      Vue.set(this.searchResult, idx, newProdutos)
+      Snacks.show(this.$store, {text: `${newProdutos.produto_crawl[idxItem].produto.nome} adicionado à lista`, timeout: 2000})
     },
     removerItem (idx, idxItem) {
-      this.$store.commit('lista/removeItem', this.produtos[idx].produto_crawl[idxItem])
-      const newProdutos = this.produtos[idx]
+      const mercadoResult = this.searchResult[idx]
+      this.$store.commit('lista/removeItem', {mercadoResult, idxItem})
+      const newProdutos = this.searchResult[idx]
       newProdutos.produto_crawl[idxItem].quantidade -= 1
-      Vue.set(this.produtos, idx, newProdutos)
-      Snacks.show(this.$store, {text: `${newProdutos.produto_crawl[idxItem].produto_nome} removido da lista`, timeout: 2000})
+      Vue.set(this.searchResult, idx, newProdutos)
+      Snacks.show(this.$store, {text: `${newProdutos.produto_crawl[idxItem].produto.nome} removido da lista`, timeout: 2000})
     },
     updateQuantidades () {
-      const produtos = this.produtos
+      const searchResult = this.searchResult
       const mercadosLista = this.$store.state.lista.mercadosLista
-      produtos.forEach((produto, idx) => {
-        produto.produto_crawl.forEach((item, idxItem) => {
-          const newQuantidade = (mercadosLista[item.mercado.unidade] && mercadosLista[item.mercado.unidade][item.id] && mercadosLista[item.mercado.unidade][item.id].quantidade) || 0
-          const newProduto = this.produtos[idx]
-          if (newProduto.produto_crawl[idxItem].quantidade !== newQuantidade) {
-            newProduto.produto_crawl[idxItem].quantidade = newQuantidade
-            Vue.set(this.produtos, idx, newProduto)
+      searchResult.forEach((mercadoResult, idx) => {
+        mercadoResult.produto_crawl.forEach((item, idxItem) => {
+          const newQuantidade = (mercadosLista[mercadoResult.mercado.unidade] && mercadosLista[mercadoResult.mercado.unidade][item.id] && mercadosLista[mercadoResult.mercado.unidade][item.id].quantidade) || 0
+          const newMercadoResult = mercadoResult
+          if (newMercadoResult.produto_crawl[idxItem].quantidade !== newQuantidade) {
+            newMercadoResult.produto_crawl[idxItem].quantidade = newQuantidade
+            Vue.set(this.searchResult, idx, newMercadoResult)
           }
         })
       })
     },
     getLogo (rede) {
       return this.logoMap[rede]
+    },
+    hideKeyboard () {
+      document.activeElement.blur()
     }
   }
 }
@@ -220,9 +211,4 @@ export default {
   white-space: nowrap;
 }
 /* só tá aplicando a primeira prop */
-span {
-  white-space: nowrap;
-  overflow: hidden;              /* "overflow" value must be different from "visible" */
-  text-overflow: ellipsis;
-}
 </style>

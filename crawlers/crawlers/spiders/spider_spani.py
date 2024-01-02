@@ -6,9 +6,9 @@ from decimal import Decimal as D
 from functools import partial
 
 import scrapy
+
 from crawlers.items import VipCommerceItem
 from crawlers.spiders import BaseSpider
-
 
 header = {
     "accept": "application/json",
@@ -25,7 +25,7 @@ header = {
     "sec-fetch-dest": "empty",
     "sec-fetch-mode": "cors",
     "sec-fetch-site": "same-site",
-    "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"
+    "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
 }
 
 
@@ -33,8 +33,8 @@ class SpaniSpider(BaseSpider):
     name = "spani"
 
     custom_settings = {
-        'ITEM_PIPELINES': {
-            'crawlers.pipelines.VipCommercePipeline': 300  # estudar melhor esse negócio de pipelines, pode
+        "ITEM_PIPELINES": {
+            "crawlers.pipelines.VipCommercePipeline": 300  # estudar melhor esse negócio de pipelines, pode
             # ter uma pipeline por api, nesse caso é vip commerce
         }
     }
@@ -42,13 +42,17 @@ class SpaniSpider(BaseSpider):
     def __init__(self, filial=1, centro_distribuicao=10):
         self.centro_distribuicao = centro_distribuicao
         super().__init__("SPANI", filial)
-    
+
     def start_requests(self):
         centro_distribuicao = self.centro_distribuicao
         filial = self.filial
-        
+
         url = "https://api.spanionline.com.br/v1/loja/classificacoes_mercadologicas/departamentos/arvore/filial/{filial}/centro_distribuicao/{centro_distribuicao}"
-        yield scrapy.Request(url.format(filial=filial, centro_distribuicao=centro_distribuicao), callback=self.parse_categorias, headers=header)
+        yield scrapy.Request(
+            url.format(filial=filial, centro_distribuicao=centro_distribuicao),
+            callback=self.parse_categorias,
+            headers=header,
+        )
 
     def parse(self, response, departamento, categoria):
         jsonresponse = json.loads(response.text)["data"]
@@ -62,10 +66,10 @@ class SpaniSpider(BaseSpider):
                 departamento=departamento,
                 peso_bruto=None,
                 peso_liquido=None,
-                unidades = produto["quantidade_unidade_diferente"],
-                preco = produto["preco"]
+                unidades=produto["quantidade_unidade_diferente"],
+                preco=produto["preco"],
             )
-        
+
     def parse_categorias(self, response):
         categorias_tree = json.loads(response.text)["data"]
         for dep in categorias_tree:
@@ -73,5 +77,8 @@ class SpaniSpider(BaseSpider):
                 parse_categoria = partial(self.parse, departamento=dep["descricao"], categoria=cat["descricao"])
                 secao = cat["classificacao_mercadologica_id"]
                 url = "https://api.spanionline.com.br/v1/loja/classificacoes_mercadologicas/secoes/{secao}/produtos/filial/{filial}/centro_distribuicao/{centro_distribuicao}/ativos?orderby=produto.descricao:asc"
-                yield scrapy.Request(url.format(secao=secao, filial=self.filial, centro_distribuicao=self.centro_distribuicao), callback=parse_categoria, headers=header)
-
+                yield scrapy.Request(
+                    url.format(secao=secao, filial=self.filial, centro_distribuicao=self.centro_distribuicao),
+                    callback=parse_categoria,
+                    headers=header,
+                )

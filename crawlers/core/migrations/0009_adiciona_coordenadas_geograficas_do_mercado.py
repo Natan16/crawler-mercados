@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0008_unacced_e_trigram'),
+        ("core", "0008_unacced_e_trigram"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='mercado',
-            name='latitude',
+            model_name="mercado",
+            name="latitude",
             field=models.FloatField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='mercado',
-            name='longitude',
+            model_name="mercado",
+            name="longitude",
             field=models.FloatField(blank=True, null=True),
         ),
     ]

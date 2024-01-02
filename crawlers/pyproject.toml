@@ -1,12 +1,11 @@
 [tool.poetry]
-name = "crawler-mercados"
+name = "crawlers"
 version = "0.1.0"
 description = "Crawleia os principais supermercados de são josé dos campos pra saber onde os preços estão mais baixos"
 authors = ["Natan Lima Viana <natanvianat16@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
-selenium = "^4.2.0"
+python = "^3.11.0"
 Django = "^4.0.5"
 python-decouple = "^3.6"
 psycopg2-binary = "^2.9.3"

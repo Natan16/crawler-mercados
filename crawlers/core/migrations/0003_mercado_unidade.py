@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0002_mercado'),
+        ("core", "0002_mercado"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='mercado',
-            name='unidade',
+            model_name="mercado",
+            name="unidade",
             field=models.CharField(blank=True, max_length=1024, null=True),
         ),
     ]

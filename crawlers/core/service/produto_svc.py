@@ -1,53 +1,144 @@
-import operator
-from core.models import Produto, ProdutoCrawl, Crawl
+from collections import defaultdict
 from datetime import datetime, timedelta
-from django.db.models import CharField, Q, Prefetch
-from django.db.models.functions import Lower
+from decimal import Decimal
+from typing import List
 from functools import reduce
+import operator
+from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
+from django.db.models import Q, CharField, Exists, OuterRef, Subquery
+from django.db.models.functions import Lower
 from numpy import mean
-from functools import partial
 
+from core.models import Crawl, Produto, ProdutoCrawl
 
 CharField.register_lookup(Lower)
 
-def _sort_produto(produto, words):
-    preco_medio = float(mean(list(produto.produtocrawl_set.all().values_list("preco", flat=True))))
-    if produto.nome.strip().lower().split()[0] == words[0].lower():
-        return preco_medio - 1000
-    # mesma ordem ganha de ordem bagunçada
-    # o problema maior é a correspondência entre produtos e não o algoritmo da busca em si
-    return preco_medio
 
 
-def produtos(search_term, mercados_proximos):
-    words = search_term.split()
-    # tem que ter um pré-processamento das palavras
-    # ... do que vai consistir isso?
-    # identificar o que é quantidade e padronizar 1.5l 1,5l 1,5 l e 1.5 l tem que ser tudo equivalente
-    # pode até ter uma forma de selecionar a quantidade ... isso aqui é um bom começo
-    # isolar unidades e quantidade em campos separados é fundamental pra fazer comparações
-    # aproveitar que tá nessa e já fazer marca também
-
-    query = reduce(operator.and_, (Q(nome__lower__unaccent__icontains=word) for word in words))
-    produto_qs = Produto.objects.filter(query)
-    crawl_qs = Crawl.objects.filter(
-        created_at__gte=datetime.now() - timedelta(days=7)
-    ).order_by("-created_at")
-    mercado_crawl_map = {}
-    for crawl in crawl_qs:
-        if mercados_proximos and crawl.mercado.pk not in mercados_proximos:
-            continue 
-        if crawl.mercado.pk in mercado_crawl_map:
-           continue
-        mercado_crawl_map[crawl.mercado.pk] = crawl
-
-    produto_qs = produto_qs.prefetch_related(
-        Prefetch(
-            lookup="produtocrawl_set",
-            queryset=ProdutoCrawl.objects.filter(
-                crawl__in=mercado_crawl_map.values()
-            ).select_related("produto", "crawl__mercado").order_by("preco"),
-            to_attr="produtocrawl_recente")
+def produtos_mercados_proximos(search_term: str, mercados_proximos: List[int], limit: int = 20):
+    """
+    procura produtos numa lista de mercados próximos, considerando no máximo limit produtos
+    """
+    search_term = search_term.strip()
+    # crawls de interesse
+    crawl_qs = (
+        Crawl.objects.filter(created_at__gte=datetime.now() - timedelta(days=8))
+        .select_related("mercado")
+        .order_by("mercado_id", "-created_at")
+        .distinct("mercado_id")
     )
-    sorted_produtos = sorted(produto_qs, key=partial(_sort_produto, words=words))
-    return sorted_produtos
+    if mercados_proximos:
+        crawl_qs = crawl_qs.filter(mercado_id__in=mercados_proximos)
+    else:
+        crawl_qs = crawl_qs[:5]
+
+    # produtos de interesse
+    vector = SearchVector("nome", "departamento", "categoria", config="portuguese")
+    query = SearchQuery(search_term, config="portuguese")
+    # TODO: dar um peso maior para a quantidade
+    # TODO: tag do mais em conta parece não estar funcionando bem -> debugar o caso do ketchup heinz
+    words = search_term.split()
+    extra_query = reduce(operator.and_, (Q(nome__lower__unaccent__icontains=word) for word in words))
+    produto_qs = (
+        Produto.objects.annotate(
+            rank=SearchRank(vector, query)
+        )
+        .order_by("-rank")
+        .annotate(active=Exists(
+            Subquery(ProdutoCrawl.objects.filter(
+                crawl__in=crawl_qs, produto_id=OuterRef("pk")
+            )
+        )))
+        .filter(active=True)
+        .filter(Q(rank__gt=0.01) | extra_query)[:limit]
+    )
+    for produto in produto_qs:
+        setattr(produto, "rank_r", round(getattr(produto, "rank", 0), 1))
+    produto_ordering_map = {produto.pk: produto.rank_r for produto in produto_qs}
+    produto_rank_map = {produto.pk: getattr(produto, "rank", 0) for produto in produto_qs}
+
+    crawl_mercado_map = {}
+    for crawl in crawl_qs:
+        if crawl.pk in crawl_mercado_map:
+            continue
+        crawl_mercado_map[crawl.pk] = crawl.mercado
+
+    produto_crawl_qs = ProdutoCrawl.objects.filter(crawl__in=crawl_qs, produto__in=produto_qs).prefetch_related(
+        "produto"
+    )
+    produto_crawl_list = sorted(
+        list(produto_crawl_qs),
+        key=lambda produto_crawl: (
+            -produto_ordering_map.get(produto_crawl.produto.pk, 0),
+            produto_crawl.preco,
+        ),
+    )
+
+    crawl_produto_crawl_list_map = defaultdict(list)
+    for produto_crawl in produto_crawl_list:
+        crawl_produto_crawl_list_map[produto_crawl.crawl_id].append(produto_crawl)
+        setattr(produto_crawl, "rank", produto_rank_map.get(produto_crawl.produto.pk, 0))
+
+    produto_precos_map = defaultdict(list)
+    for produto_crawl in produto_crawl_qs:
+        produto_precos_map[produto_crawl.produto.pk].append(produto_crawl.preco)
+    produto_preco_medio_map = {produto_id: mean(precos) for produto_id, precos in produto_precos_map.items()}
+    dmercados = _search_produtos(crawl_produto_crawl_list_map, crawl_mercado_map, produto_preco_medio_map)
+
+    return dmercados
+
+
+def _get_id_mais_em_conta(itens: List[ProdutoCrawl]):
+    """
+    retorna id do produto crawl mais em conta de uma lista de
+    produtos crawl considerando a unidade de medida mais comum
+    dessa lista. Se Se não tiver ao menos 2 itens pra comparar
+    retorna -1
+    """
+    itens = list(filter(lambda pc: pc.rank > 0.01, itens))
+    if not itens:
+        return -1
+    unidade_de_medida_item_map = defaultdict(list)
+
+    for item in itens:
+        unidade_de_medida_item_map[item.produto.unidade_de_medida].append(item)
+    unidade_mais_comum, _ = max(unidade_de_medida_item_map.items(), key=lambda kv: len(kv[1]))
+    itens_com_unidade_mais_comum = unidade_de_medida_item_map[unidade_mais_comum]
+
+    if not itens_com_unidade_mais_comum or len(itens_com_unidade_mais_comum) < 2:
+        return -1
+    item_com_menor_preco_por_unidade = min(
+        itens_com_unidade_mais_comum, key=lambda item: item.preco / (item.produto.unidades * item.produto.medida)
+    )
+    return item_com_menor_preco_por_unidade.pk
+
+
+def _search_produtos(crawl_produto_crawl_list_map, crawl_mercado_map, produto_preco_medio_map):
+    dmercados = []
+    for crawl_id, produto_crawl_list in crawl_produto_crawl_list_map.items():
+        id_mais_em_conta = _get_id_mais_em_conta(produto_crawl_list)
+        mercado = crawl_mercado_map.get(crawl_id)
+        if not mercado:
+            continue
+        dmercado = {}
+        dmercado["mercado"] = {"id": mercado.pk, "unidade": mercado.unidade, "rede": mercado.rede}
+        dmercado["produto_crawl"] = []
+        for pc in produto_crawl_list:
+            dprodutocrawl = {
+                "id": pc.id,
+                "preco": pc.preco,
+                "produto": {"id": pc.produto.pk, "nome": pc.produto.nome},
+                "tags": [],
+            }
+            # coloca tags
+            if pc.id == id_mais_em_conta:
+                dprodutocrawl["tags"].append("mais em conta")
+            preco_medio = produto_preco_medio_map[pc.produto.id]
+            if pc.preco > Decimal("1.05") * preco_medio:
+                dprodutocrawl["tags"].append("acima da média")
+            elif pc.preco < Decimal("0.95") * preco_medio:
+                dprodutocrawl["tags"].append("abaixo da média")
+
+            dmercado["produto_crawl"].append(dprodutocrawl)
+        dmercados.append(dmercado)
+    return dmercados

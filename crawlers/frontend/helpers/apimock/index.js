@@ -1,6 +1,7 @@
 import { zuck } from './db_people'
 import { todos } from './db_todos'
 import { mockasync } from './mockutils'
+import {produtos} from './db_produtos'
 
 const keepLoggedIn = true
 
@@ -29,5 +30,8 @@ export default {
   },
   add_todo (newtask) {
     return mockasync({description: newtask, done: false})
+  },
+  search_produto (term, mercadosProximos) {
+    return mockasync(produtos)
   }
 }
